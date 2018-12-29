@@ -1,0 +1,20 @@
+{
+  "name": "cc-stream",
+  "version": "1.0.0",
+  "description": "Cryptocompare Websocket stream tests.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rainner/cc-stream.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/rainner/cc-stream/issues"
+  },
+  "homepage": "https://github.com/rainner/cc-stream#readme"
+}

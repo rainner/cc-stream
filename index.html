@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>AppTest</title>
+    <meta charset="UTF-8" />
+    <meta http-equiv="x-ua-compatible" content="IE=Edge, chrome=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <meta name="description" id="description" content="My awesome web app." />
+    <link rel="stylesheet" href="public/app.css" />
+  </head>
+  <body>
+
+    <div id="app">
+
+      <header class="flex-row flex-middle flex-center push-top push-bottom">
+        <h1>Cryptocompare Stream Test</h1>
+      </header>
+
+      <main class="prices-wrap flex-row flex-middle flex-center">
+
+        <div class="prices-item" v-for="( data, pair ) in prices" :key="pair">
+          <h3 class="push-bottom">{{ pair }}:</h3>
+
+          <table>
+            <tr v-for="( val, key ) in data" :key="key">
+              <td><b>{{ key }}</b>:</td>
+              <td>{{ val }}</td>
+            </tr>
+          </table>
+
+        </div>
+
+      </main>
+
+    </div>
+
+    <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.slim.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/vue/2.5.21/vue.min.js"></script>
+    <script src="public/app.js"></script>
+  </body>
+</html>
