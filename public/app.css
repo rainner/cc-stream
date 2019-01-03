@@ -26,12 +26,12 @@ body {
   font-weight: 600;
   font-size: 16px;
   line-height: 1.4em;
-  background-color: #0f0f1f;
+  background-color: #202020;
   background-attachment: fixed;
   background-position: center top;
   background-repeat: no-repeat;
   background-size: 100%;
-  color: cadetblue;
+  color: azure;
 }
 
 h1, h2, h3, h4, h5 {
@@ -127,13 +127,15 @@ h1, h2, h3, h4, h5 {
   padding: 1em;
 }
 
-.prices-wrap > .prices-item {
-  min-width: 400px;
-  background-color: rgba( 0, 0, 0, 0.2 );
-  margin: 1em;
-  padding: 1em;
-  border-radius: 5px;
+.ticker-list {
+  display: block;
+  position: relative;
+  max-width: 1280px;
+  margin: 0 auto;
 }
-.prices-wrap > .prices-item > table {
-  width: 100%;
+.ticker-list > .ticker-item {
+  margin: 0 0 5px 0;
+  padding: 1em;
+  background-color: rgba( 0, 0, 0, 0.2 );
+  border-radius: 5px;
 }

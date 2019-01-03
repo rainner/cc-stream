@@ -16,17 +16,45 @@
         <h1>Cryptocompare Stream Test</h1>
       </header>
 
-      <main class="prices-wrap flex-row flex-middle flex-center">
+      <main class="ticker-list">
 
-        <div class="prices-item" v-for="( data, pair ) in prices" :key="pair">
-          <h3 class="push-bottom">{{ pair }}:</h3>
+        <div class="ticker-item flex-row flex-middle flex-stretch">
+          <div class="flex-1 push-right">Coin</div>
+          <div class="flex-1 push-right">Price</div>
+          <div class="flex-1 push-right">Market Cap</div>
+          <div class="flex-1 push-right">Supply</div>
+          <div class="flex-1 push-right">Change 1h</div>
+          <div class="flex-1 push-right">Change 24h</div>
+        </div>
 
-          <table>
-            <tr v-for="( val, key ) in data" :key="key">
-              <td><b>{{ key }}</b>:</td>
-              <td>{{ val }}</td>
-            </tr>
-          </table>
+        <div class="ticker-item flex-row flex-middle flex-stretch" v-for="( d, pair ) in ticker_data" :key="pair">
+
+          <div class="flex-1 push-right">
+            <span>{{ d.FullName }}</span> <br />
+            <span>{{ d.Name }}</span>
+          </div>
+
+          <div class="flex-1 push-right">
+            <span>{{ d.PRICE | toFixed( 8 ) }}</span>
+          </div>
+
+          <div class="flex-1 push-right">
+            <span>{{ d.MKTCAP | toMoney( 0 ) }}</span> <br />
+          </div>
+
+           <div class="flex-1 push-right">
+            <span>{{ d.SUPPLY | toMoney( 0 ) }}</span> <br />
+          </div>
+
+          <div class="flex-1 push-right">
+            <span>{{ d.CHANGEHOUR | toFixed( 8 ) }}</span> <br />
+            <span>{{ d.CHANGEPCTHOUR | toFixed( 3 ) }}%</span>
+          </div>
+
+          <div class="flex-1 push-right">
+            <span>{{ d.CHANGE24HOUR | toFixed( 8 ) }}</span> <br />
+            <span>{{ d.CHANGEPCT24HOUR | toFixed( 3 ) }}%</span>
+          </div>
 
         </div>
 
@@ -34,8 +62,10 @@
 
     </div>
 
+    <script src="//cdnjs.cloudflare.com/ajax/libs/axios/0.18.0/axios.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.slim.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/vue/2.5.21/vue.min.js"></script>
+    <script src="public/cryptocompare.js"></script>
     <script src="public/app.js"></script>
   </body>
 </html>
