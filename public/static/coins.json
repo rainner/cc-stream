@@ -1,0 +1,302 @@
+[
+  {
+    "position": 1,
+    "name": "Bitcoin",
+    "url": "https://www.coinrated.com/coins/bitcoin",
+    "image": "https://www.coinrated.com/media/reviews/photos/original/2f/9f/f5/26-bitcoin-23-1513378962.png"
+  },
+  {
+    "position": 2,
+    "name": "Ethereum",
+    "url": "https://www.coinrated.com/coins/ethereum",
+    "image": "https://www.coinrated.com/media/reviews/photos/original/49/7a/04/27-ethereum-63-1526272110.png"
+  },
+  {
+    "position": 3,
+    "name": "Achain",
+    "url": "https://www.coinrated.com/coins/achain",
+    "image": "https://www.coinrated.com/media/reviews/photos/original/52/a3/31/42-achain-58-1526863095.png"
+  },
+  {
+    "position": 4,
+    "name": "VeChain",
+    "url": "https://www.coinrated.com/coins/vechain",
+    "image": "https://www.coinrated.com/media/reviews/photos/original/c6/3f/5b/49-vechain-37-1526010879.png"
+  },
+  {
+    "position": 5,
+    "name": "Ripple",
+    "url": "https://www.coinrated.com/coins/ripple",
+    "image": "https://www.coinrated.com/media/reviews/photos/original/4d/28/98/31-ripple-62-1526010698.png"
+  },
+  {
+    "position": 6,
+    "name": "Komodo",
+    "url": "https://www.coinrated.com/coins/komodo",
+    "image": "https://www.coinrated.com/media/reviews/photos/original/f7/f5/3b/76-komodo-79-1526419344.png"
+  },
+  {
+    "position": 7,
+    "name": "Bitcoin Cash",
+    "url": "https://www.coinrated.com/coins/bitcoin-cash",
+    "image": "https://www.coinrated.com/media/reviews/photos/original/f7/e8/de/40-bitcoin-cash-15-1526260337.png"
+  },
+  {
+    "position": 8,
+    "name": "Binance Coin",
+    "url": "https://www.coinrated.com/coins/binance-coin",
+    "image": "https://www.coinrated.com/media/reviews/photos/original/a5/42/17/102-binance-coin-98-1526260749.png"
+  },
+  {
+    "position": 9,
+    "name": "Ethereum Classic",
+    "url": "https://www.coinrated.com/coins/ethereum-classic",
+    "image": "https://www.coinrated.com/media/reviews/photos/original/3f/80/b0/56-ethereum-classic-36-1526272210.png"
+  },
+  {
+    "position": 10,
+    "name": "Status",
+    "url": "https://www.coinrated.com/coins/status",
+    "image": "https://www.coinrated.com/media/reviews/photos/original/b6/9d/d8/137-status-63-1526863228.png"
+  },
+  {
+    "position": 11,
+    "name": "Lisk",
+    "url": "https://www.coinrated.com/coins/lisk",
+    "image": "https://www.coinrated.com/media/reviews/photos/original/43/6c/9c/58-lisk-17-1526260803.png"
+  },
+  {
+    "position": 12,
+    "name": "Dash",
+    "url": "https://www.coinrated.com/coins/dash",
+    "image": "https://www.coinrated.com/media/reviews/photos/original/d0/6c/39/47-dash-9-1526010845.png"
+  },
+  {
+    "position": 13,
+    "name": "ICON",
+    "url": "https://www.coinrated.com/coins/icon",
+    "image": "https://www.coinrated.com/media/reviews/photos/original/ee/8b/4d/117-icon-79-1526419108.png"
+  },
+  {
+    "position": 14,
+    "name": "Aeternity",
+    "url": "https://www.coinrated.com/coins/aeternity",
+    "image": "https://www.coinrated.com/media/reviews/photos/original/a8/3a/f1/97-aeternity-61-1526861701.png"
+  },
+  {
+    "position": 15,
+    "name": "0x",
+    "url": "https://www.coinrated.com/coins/0x",
+    "image": "https://www.coinrated.com/media/reviews/photos/original/46/da/f9/95-0x-44-1526260915.png"
+  },
+  {
+    "position": 16,
+    "name": "NEO",
+    "url": "https://www.coinrated.com/coins/neo",
+    "image": "https://www.coinrated.com/media/reviews/photos/original/24/e4/12/33-neo-100-1526010810.png"
+  },
+  {
+    "position": 17,
+    "name": "Bitcoin Gold",
+    "url": "https://www.coinrated.com/coins/bitcoin-gold",
+    "image": "https://www.coinrated.com/media/reviews/photos/original/02/13/4c/59-bitcoin-gold-64-1526260846.png"
+  },
+  {
+    "position": 18,
+    "name": "Litecoin",
+    "url": "https://www.coinrated.com/coins/litecoin",
+    "image": "https://www.coinrated.com/media/reviews/photos/original/7e/87/f4/94-litecoin-99-1526260361.png"
+  },
+  {
+    "position": 19,
+    "name": "Bytecoin",
+    "url": "https://www.coinrated.com/coins/bytecoin",
+    "image": "https://www.coinrated.com/media/reviews/photos/original/c6/5f/cd/55-bytecoin-73-1526260625.png"
+  },
+  {
+    "position": 20,
+    "name": "Stellar",
+    "url": "https://www.coinrated.com/coins/stellar",
+    "image": "https://www.coinrated.com/media/reviews/photos/original/65/3b/a5/44-stellar-96-1526010775.png"
+  },
+  {
+    "position": 21,
+    "name": "Cortex",
+    "url": "https://www.coinrated.com/coins/cortex",
+    "image": "https://www.coinrated.com/media/reviews/photos/original/39/95/50/105-cortex-54-1526870653.png"
+  },
+  {
+    "position": 22,
+    "name": "Skycoin",
+    "url": "https://www.coinrated.com/coins/skycoin",
+    "image": "https://www.coinrated.com/media/reviews/photos/original/3d/2a/75/86-skycoin-63-1526863733.png"
+  },
+  {
+    "position": 23,
+    "name": "OmiseGO",
+    "url": "https://www.coinrated.com/coins/omisego",
+    "image": "https://www.coinrated.com/media/reviews/photos/original/8e/73/02/130-omisego-45-1526260785.png"
+  },
+  {
+    "position": 24,
+    "name": "Polymath",
+    "url": "https://www.coinrated.com/coins/polymath",
+    "image": "https://www.coinrated.com/media/reviews/photos/original/d5/dd/64/132-polymath-63-1526864073.png"
+  },
+  {
+    "position": 25,
+    "name": "Wanchain",
+    "url": "https://www.coinrated.com/coins/wanchain",
+    "image": "https://www.coinrated.com/media/reviews/photos/original/8c/bb/49/63-wanchain-49-1526862535.png"
+  },
+  {
+    "position": 26,
+    "name": "ReddCoin",
+    "url": "https://www.coinrated.com/coins/reddcoin",
+    "image": "https://www.coinrated.com/media/reviews/photos/original/de/24/32/84-reddcoin-8-1526863656.png"
+  },
+  {
+    "position": 27,
+    "name": "Tether",
+    "url": "https://www.coinrated.com/coins/tether",
+    "image": "https://www.coinrated.com/media/reviews/photos/original/6d/66/48/141-tether-12-1526260677.png"
+  },
+  {
+    "position": 28,
+    "name": "Cardano",
+    "url": "https://www.coinrated.com/coins/cardano",
+    "image": "https://www.coinrated.com/media/reviews/photos/original/1f/a6/83/38-cardano-67-1526010761.png"
+  },
+  {
+    "position": 29,
+    "name": "Ark",
+    "url": "https://www.coinrated.com/coins/ark",
+    "image": "https://www.coinrated.com/media/reviews/photos/original/98/14/eb/79-ark-42-1526861669.png"
+  },
+  {
+    "position": 30,
+    "name": "Verge",
+    "url": "https://www.coinrated.com/coins/verge",
+    "image": "https://www.coinrated.com/media/reviews/photos/original/56/f8/e5/61-verge-71-1526260861.png"
+  },
+  {
+    "position": 31,
+    "name": "FunFair",
+    "url": "https://www.coinrated.com/coins/funfair",
+    "image": "https://www.coinrated.com/media/reviews/photos/original/19/f8/94/112-funfair-26-1526862049.png"
+  },
+  {
+    "position": 32,
+    "name": "Qtum",
+    "url": "https://www.coinrated.com/coins/qtum",
+    "image": "https://www.coinrated.com/media/reviews/photos/original/cb/6b/de/57-qtum-8-1526260741.png"
+  },
+  {
+    "position": 33,
+    "name": "Zcash",
+    "url": "https://www.coinrated.com/coins/zcash",
+    "image": "https://www.coinrated.com/media/reviews/photos/original/33/fd/e1/60-zcash-54-1526260828.png"
+  },
+  {
+    "position": 34,
+    "name": "Waves",
+    "url": "https://www.coinrated.com/coins/waves",
+    "image": "https://www.coinrated.com/media/reviews/photos/original/84/63/81/67-waves-68-1526862303.png"
+  },
+  {
+    "position": 35,
+    "name": "Monero",
+    "url": "https://www.coinrated.com/coins/monero",
+    "image": "https://www.coinrated.com/media/reviews/photos/original/b5/b5/73/46-monero-80-1526010834.png"
+  },
+  {
+    "position": 36,
+    "name": "NEM",
+    "url": "https://www.coinrated.com/coins/nem",
+    "image": "https://www.coinrated.com/media/reviews/photos/original/39/18/bc/48-nem-65-1526010856.png"
+  },
+  {
+    "position": 37,
+    "name": "Maker",
+    "url": "https://www.coinrated.com/coins/maker",
+    "image": "https://www.coinrated.com/media/reviews/photos/original/41/71/65/123-maker-65-1526863454.png"
+  },
+  {
+    "position": 38,
+    "name": "Nuls",
+    "url": "https://www.coinrated.com/coins/nuls",
+    "image": "https://www.coinrated.com/media/reviews/photos/original/2f/81/c3/129-nuls-68-1526863470.png"
+  },
+  {
+    "position": 39,
+    "name": "Bitcoin Diamond",
+    "url": "https://www.coinrated.com/coins/bitcoin-diamond",
+    "image": "https://www.coinrated.com/media/reviews/photos/original/12/54/fa/68-bitcoin-diamond-93-1526862684.png"
+  },
+  {
+    "position": 40,
+    "name": "Elastos",
+    "url": "https://www.coinrated.com/coins/elastos",
+    "image": "https://www.coinrated.com/media/reviews/photos/original/a9/5a/d9/80-elastos-98-1526863315.png"
+  },
+  {
+    "position": 41,
+    "name": "Ontology",
+    "url": "https://www.coinrated.com/coins/ontology",
+    "image": "https://www.coinrated.com/media/reviews/photos/original/2a/bd/1c/131-ontology-10-1526862785.png"
+  },
+  {
+    "position": 42,
+    "name": "Zilliqa",
+    "url": "https://www.coinrated.com/coins/zilliqa",
+    "image": "https://www.coinrated.com/media/reviews/photos/original/3b/a1/89/146-zilliqa-73-1526862604.png"
+  },
+  {
+    "position": 43,
+    "name": "Nano",
+    "url": "https://www.coinrated.com/coins/nano",
+    "image": "https://www.coinrated.com/media/reviews/photos/original/6d/48/ab/62-nano-44-1526862097.png"
+  },
+  {
+    "position": 44,
+    "name": "Cryptonex",
+    "url": "https://www.coinrated.com/coins/cryptonex",
+    "image": "https://www.coinrated.com/media/reviews/photos/original/54/84/c1/81-cryptonex-32-1526863338.png"
+  },
+  {
+    "position": 45,
+    "name": "Huobi Token",
+    "url": "https://www.coinrated.com/coins/huobi-token",
+    "image": "https://www.coinrated.com/media/reviews/photos/original/7b/05/73/89-huobi-token-43-1526863396.png"
+  },
+  {
+    "position": 46,
+    "name": "Basic Attention Token",
+    "url": "https://www.coinrated.com/coins/basic-attention-token",
+    "image": "https://www.coinrated.com/media/reviews/photos/original/8b/d0/73/101-basic-attention-token-63-1526863845.png"
+  },
+  {
+    "position": 47,
+    "name": "Bitcoin Private",
+    "url": "https://www.coinrated.com/coins/bitcoin-private",
+    "image": "https://www.coinrated.com/media/reviews/photos/original/f5/71/69/71-bitcoin-private-4-1526863584.png"
+  },
+  {
+    "position": 48,
+    "name": "Golem",
+    "url": "https://www.coinrated.com/coins/golem",
+    "image": "https://www.coinrated.com/media/reviews/photos/original/93/67/25/115-golem-89-1526439668.png"
+  },
+  {
+    "position": 49,
+    "name": "Mixin",
+    "url": "https://www.coinrated.com/coins/mixin",
+    "image": "https://www.coinrated.com/media/reviews/photos/original/3f/9d/a4/126-mixin-44-1526871162.png"
+  },
+  {
+    "position": 50,
+    "name": "Substratum",
+    "url": "https://www.coinrated.com/coins/substratum",
+    "image": "https://www.coinrated.com/media/reviews/photos/original/b3/5f/79/140-substratum-22-1526863509.png"
+  }
+]

@@ -1,0 +1,264 @@
+/**
+  * Doc reset and setup
+  */
+*, *:before, *:after {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  outline: none;
+  background-color: transparent;
+  text-transform: none;
+  text-shadow: none;
+  box-shadow: none;
+  box-sizing: border-box;
+  appearance: none;
+}
+html, body {
+  display: block;
+  position: relative;
+  max-width: 100vw;
+  min-height: 100vh;
+}
+html {
+  overflow: hidden;
+  overflow-y: scroll;
+}
+body {
+  font-family: 'Open Sans Condensed', monospace;
+  font-weight: 700;
+  font-size: 18px;
+  line-height: 1.4em;
+  background-color: #e0e0e0;
+  background-attachment: fixed;
+  background-position: center top;
+  background-repeat: no-repeat;
+  background-size: 100%;
+  color: #40494f;
+}
+article, aside, details, figcaption, figure, footer, header, hgroup,
+menu, nav, section, main, summary, div, h1, h2, h3, h4, h5, h6, hr,
+p, ol, ul, form, img {
+  display: block;
+}
+button, input, select, optgroup, option, textarea {
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: normal;
+  line-height: inherit;
+  text-align: left;
+  color: inherit;
+  outline: none;
+  background: transparent;
+}
+h1, h2, h3, h4, h5 {
+  line-height: normal;
+}
+
+/**
+  * Flex helpers
+  */
+.flex-column {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+}
+.flex-row {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+}
+ .flex-wrap {
+  flex-wrap: wrap;
+}
+.flex-left {
+  justify-content: flex-start;
+}
+.flex-center {
+  justify-content: center;
+}
+.flex-right {
+  justify-content: flex-end;
+}
+.flex-space {
+  justify-content: space-between;
+}
+.flex-around {
+  justify-content: space-around;
+}
+.flex-top {
+  align-items: flex-start;
+}
+.flex-middle {
+  align-items: center;
+}
+.flex-bottom {
+  align-items: flex-end;
+}
+.flex-1 {
+  flex: 1;
+}
+.flex-2 {
+  flex: 2;
+}
+.flex-3 {
+  flex: 3;
+}
+.flex-4 {
+  flex: 4;
+}
+.flex-5 {
+  flex: 5;
+}
+.flex-10 {
+  flex-basis: 10%;
+  width: 10%;
+}
+.flex-20 {
+  flex-basis: 20%;
+  width: 20%;
+}
+.flex-30 {
+  flex-basis: 30%;
+  width: 30%;
+}
+.flex-40 {
+  flex-basis: 40%;
+  width: 40%;
+}
+.flex-50 {
+  flex-basis: 50%;
+  width: 50%;
+}
+
+/**
+  * Spacing helpers
+  */
+.push-top {
+  margin-top: 1em;
+}
+.push-right {
+  margin-right: 1em;
+}
+.push-bottom {
+  margin-bottom: 1em;
+}
+.push-left {
+  margin-left: 1em;
+}
+.push-all {
+  margin: 1em;
+}
+.pad-top {
+  padding-top: 1em;
+}
+.pad-right {
+  padding-right: 1em;
+}
+.pad-bottom {
+  padding-bottom: 1em;
+}
+.pad-left {
+  padding-left: 1em;
+}
+.pad-all {
+  padding: 1em;
+}
+
+/**
+  * Type helpers
+  */
+.text-left {
+  text-align: left;
+}
+.text-right {
+  text-align: right;
+}
+.text-center {
+  text-align: center;
+}
+.text-justify {
+  text-align: justify;
+}
+.text-top {
+  vertical-align: top;
+}
+.text-middle {
+  vertical-align: middle;
+}
+.text-bottom {
+  vertical-align: bottom;
+}
+.text-baseline {
+  vertical-align: baseline;
+}
+.text-uppercase {
+  text-transform: uppercase;
+}
+.text-lowercase {
+  text-transform: lowercase;
+}
+.text-capitalize {
+  text-transform: capitalize;
+}
+.text-underline {
+  text-decoration: underline;
+}
+.text-striked {
+  text-decoration: line-through;
+}
+.text-italic {
+  font-style: italic;
+}
+.text-bold {
+  font-weight: bold;
+}
+.text-faded {
+  opacity: .6;
+}
+
+/**
+  * Main wrappers
+  */
+#app {
+  display: block;
+  padding: 3em 0;
+}
+#wrapper {
+  display: block;
+  position: relative;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+/**
+  * Top header
+  */
+.top-header input {
+  display: block;
+  background-color: rgba( 0, 0, 0, 0.1 );
+  font-weight: bold;
+  padding: .5em 1em;
+  border-radius: 5px;
+}
+
+/**
+  * Ticker list
+  */
+.ticker-list {
+  display: block;
+}
+.ticker-list > .ticker-item {
+  margin: 0 0 5px 0;
+  padding: 1em;
+  background-color: rgba( 255,255,255, 0.5 );
+  border-radius: 5px;
+}
+.ticker-list > .ticker-item > .color {
+  color: grey;
+}
+.ticker-list > .ticker-item.gain > .color {
+  color: green;
+}
+.ticker-list > .ticker-item.loss > .color {
+  color: red;
+}
