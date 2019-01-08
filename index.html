@@ -1,71 +1,73 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>AppTest</title>
+    <title>Coinrated Tests</title>
     <meta charset="UTF-8" />
     <meta http-equiv="x-ua-compatible" content="IE=Edge, chrome=1" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
     <meta name="description" id="description" content="My awesome web app." />
-    <link rel="stylesheet" href="public/app.css" />
+
+    <link href="//fonts.googleapis.com/css?family=Open+Sans+Condensed:700" rel="stylesheet">
+    <link rel="stylesheet" href="public/css/app.css" />
   </head>
   <body>
 
     <div id="app">
+      <div id="wrapper">
 
-      <header class="flex-row flex-middle flex-center push-top push-bottom">
-        <h1>Cryptocompare Stream Test</h1>
-      </header>
+        <header class="top-header flex-row flex-middle flex-space push-top push-bottom">
+          <h1>Crypto Ticker ({{ ticker_quote }})</h1>
+          <div>
+            <input type="text" placeholder="Search..." v-model="ticker_search" />
+          </div>
+        </header>
 
-      <main class="ticker-list">
+        <main class="ticker-list">
 
-        <div class="ticker-item flex-row flex-middle flex-stretch">
-          <div class="flex-1 push-right">Coin</div>
-          <div class="flex-1 push-right">Price</div>
-          <div class="flex-1 push-right">Market Cap</div>
-          <div class="flex-1 push-right">Supply</div>
-          <div class="flex-1 push-right">Change 1h</div>
-          <div class="flex-1 push-right">Change 24h</div>
-        </div>
-
-        <div class="ticker-item flex-row flex-middle flex-stretch" v-for="( d, pair ) in ticker_data" :key="pair">
-
-          <div class="flex-1 push-right">
-            <span>{{ d.FullName }}</span> <br />
-            <span>{{ d.Name }}</span>
+          <div class="ticker-item flex-row flex-middle flex-stretch">
+            <div class="push-right" style="width: 32px"></div>
+            <div class="flex-20 push-right">Coin</div>
+            <div class="flex-20 push-right text-right">Price</div>
+            <div class="flex-20 push-right text-right">Market Cap</div>
+            <div class="flex-20 push-right text-right">Supply</div>
+            <div class="flex-20 text-right">Change 24h</div>
           </div>
 
-          <div class="flex-1 push-right">
-            <span>{{ d.PRICE | toFixed( 8 ) }}</span>
+          <div v-for="c of tickerList" class="ticker-item flex-row flex-middle flex-stretch" :class="c.style" :key="c.id">
+            <div class="push-right">
+              <img :src="c.image" width="32" height="32" :alt="c.name" />
+            </div>
+            <div class="flex-20 push-right">
+              <span>{{ c.name }}</span> <br />
+              <span v-if="c.symbol" class="text-faded">{{ c.symbol}}</span>
+            </div>
+            <div class="flex-20 push-right text-right">
+              <span>{{ curSymb }} {{ c.price | toFixed( 8 ) }}</span>
+            </div>
+            <div class="flex-20 push-right text-right">
+              <span>{{ c.market_cap | toMoney( 0 ) }}</span>
+            </div>
+            <div class="flex-20 push-right text-right">
+              <span>{{ c.circulating_supply | toMoney( 0 ) }}</span>
+            </div>
+            <div class="flex-20 text-right color">
+              <span>{{ c.percent_change_24h | toFixed( 2 ) }}%</span>
+            </div>
           </div>
 
-          <div class="flex-1 push-right">
-            <span>{{ d.MKTCAP | toMoney( 0 ) }}</span> <br />
-          </div>
+        </main>
 
-           <div class="flex-1 push-right">
-            <span>{{ d.SUPPLY | toMoney( 0 ) }}</span> <br />
-          </div>
+      </div> <!-- wrapper -->
+    </div> <!-- app -->
 
-          <div class="flex-1 push-right">
-            <span>{{ d.CHANGEHOUR | toFixed( 8 ) }}</span> <br />
-            <span>{{ d.CHANGEPCTHOUR | toFixed( 3 ) }}%</span>
-          </div>
-
-          <div class="flex-1 push-right">
-            <span>{{ d.CHANGE24HOUR | toFixed( 8 ) }}</span> <br />
-            <span>{{ d.CHANGEPCT24HOUR | toFixed( 3 ) }}%</span>
-          </div>
-
-        </div>
-
-      </main>
-
-    </div>
-
+    <!-- cdn dependencies -->
     <script src="//cdnjs.cloudflare.com/ajax/libs/axios/0.18.0/axios.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.slim.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/vue/2.5.21/vue.min.js"></script>
-    <script src="public/cryptocompare.js"></script>
-    <script src="public/app.js"></script>
+
+    <!-- app scripts -->
+    <script src="public/js/coin.js"></script>
+    <script src="public/js/coinpaprika.js"></script>
+    <script src="public/js/app.js"></script>
+
   </body>
 </html>
