@@ -7,23 +7,27 @@ class Coin {
    * Constructor
    */
   constructor() {
+    // coin info
     this.id = '';
     this.uniq = '';
-    this.name = '';
     this.symbol = '';
     this.quote = 'USD';
+    this.name = '';
     this.pair = '';
     this.image = '';
     this.url = '';
     this.style = '';
+    this.value = '';
+    // ticker data
+    this.price = 0;
     this.position = 0;
     this.rank = 0;
-    this.price = 0;
     this.percent_change_24h = 0;
     this.volume_24h = 0;
     this.market_cap = 0;
     this.circulating_supply = 0;
     this.max_supply = 0;
+    // graphs data
     this.graph_1h = [];
     this.graph_7d = [];
   }
@@ -32,20 +36,20 @@ class Coin {
    * Set coin info data
    * @param {object}  data  Data object
    */
-  setCoinData( data ) {
+  setData( data ) {
     Object.assign( this, data );
     this.name = String( this.name ).trim();
-    this.uniq = String( this.name ).replace( /[^a-zA-Z0-9]+/g, '-' ).toLowerCase();
     this.symbol = String( this.symbol ).replace( /[^a-zA-Z]+/g, '' ).toUpperCase();
     this.quote = String( this.quote ).replace( /[^a-zA-Z]+/g, '' ).toUpperCase();
-    this.pair = String( this.symbol + this.quote ).toUpperCase();
+    this.uniq = String( this.name ).replace( /[^a-zA-Z0-9]+/g, '-' ).toLowerCase();
+    this.pair = this.symbol + this.quote;
   }
 
   /**
    * Set price related ticker data
    * @param {object}  data  Data object
    */
-  setTickerData( data ) {
+  updateTicker( data ) {
     Object.assign( this, data );
     this.price = parseFloat( this.price ) || 0;
     this.percent_change_24h = parseFloat( this.percent_change_24h ) || 0;
