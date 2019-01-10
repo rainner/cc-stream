@@ -1,66 +1,87 @@
 /**
  * App
  */
-
-// convert floating point value to fixed number
-Vue.filter( 'toFixed', ( num, decimals ) => {
-  decimals = Number( decimals ) || 0;
-  return Number( num ).toFixed( decimals );
-});
-
-// convert large number to comma separated value
-Vue.filter( 'toMoney', ( num, fixed ) => {
-  num   = parseFloat( num ) || 0;
-  fixed = parseInt( fixed ) || 0;
-  let a = [ '', 'K', 'M', 'B', 'T', '', '', '' ];
-  let o = { style: 'decimal', minimumFractionDigits: fixed, maximumFractionDigits: fixed };
-  let n = new Intl.NumberFormat( 'en-US', o ).format( num );
-  let p = n.split( ',' );
-  return ( p.length ) ? n +' '+ a[ p.length - 1 ] : n;
-});
-
-// vue instance
 new Vue({
   el: '#app',
 
+  // app data
   data: {
-    ticker_quote: 'USD',
-    ticker_limit: 50,
-    ticker_data: {},
-    ticker_search: '',
-    ticker_sort: 'market_cap',
-    ticker_order: 'desc',
+    coindata: {},
+    quote: 'dollar',
+    quotes: {
+      'dollar': { prefix: '$', symbol: 'USD', price: 1 },
+      'bitcoin': { prefix: '₿', symbol: 'BTC', price: 0 },
+      'litecoin': { prefix: 'Ł', symbol: 'LTC', price: 0 },
+      'ethereum': { prefix: 'Ξ', symbol: 'ETH', price: 0 },
+    },
+    // filter options
+    limit: 50,
+    search: '',
+    order: 'desc',
+    sort: 'market_cap',
+    sortdata: [
+      { column: 'price', name: 'Current price' },
+      { column: 'percent_change_24h', name: 'Change 24H' },
+      { column: 'volume_24h', name: 'Volume 24H' },
+      { column: 'market_cap', name: 'Market cap' },
+      { column: 'circulating_supply', name: 'Supply' },
+    ],
   },
 
-  computed: {
+  // custom filters
+  filters: {
 
-    // get currency symbol for quote
-    curSymb() {
-      switch ( this.ticker_quote ) {
-        case 'USD': return '$';
-        case 'BTC': return '₿';
-      }
-      return '';
+    /**
+     * Convert floating point value to fixed number.
+     */
+    toFixed( num, decimals ) {
+      decimals = Number( decimals ) || 0;
+      return Number( num ).toFixed( decimals );
     },
 
-    // get ticker list
+    /**
+     * Convert large number to comma separated value.
+     */
+    toMoney( num, fixed ) {
+      num   = parseFloat( num ) || 0;
+      fixed = parseInt( fixed ) || 0;
+      let a = [ '', 'K', 'M', 'B', 'T', '', '', '' ];
+      let o = { style: 'decimal', minimumFractionDigits: fixed, maximumFractionDigits: fixed };
+      let n = new Intl.NumberFormat( 'en-US', o ).format( num );
+      let p = n.split( ',' );
+      return ( p.length ) ? n +' '+ a[ p.length - 1 ] : n;
+    },
+  },
+
+  // computed methods
+  computed: {
+
+    /**
+     * Get filtered ticker list to display
+     */
     tickerList() {
-      let keys   = Object.keys( this.ticker_data );
-      let search = String( this.ticker_search ).replace( /[^\w\-]+/g, ' ' ).replace( /\s\s+/g, ' ' ).trim();
-      let rgex   = search ? new RegExp( '^'+ search, 'i' ) : null;
+      let keys   = Object.keys( this.coindata );
+      let search = String( this.search ).replace( /[^\w\-]+/g, ' ' ).replace( /\s\s+/g, ' ' ).trim();
+      let rgex   = search ? new RegExp( search, 'i' ) : null;
       let count  = keys.length;
       let list   = [];
 
       while ( count-- ) {
-        const c = this.ticker_data[ keys[ count ] ];
-        if ( rgex && !rgex.test( c.name +' '+ c.symbol ) ) continue;
+        const c = this.coindata[ keys[ count ] ];
+        // apply search filtering if needed
+        if ( rgex && !rgex.test( c.symbol +' '+ c.name ) ) continue;
+        // convert price to base quote value
+        c.value = this._convert( c.price );
+        // add to output list
         list.push( c );
       }
-      list = this._sort( list, this.ticker_sort, this.ticker_order );
+      // apply list sorting
+      list = this._sort( list, this.sort, this.order );
       return list;
     }
   },
 
+  // custom methods
   methods: {
 
     /**
@@ -91,6 +112,43 @@ new Vue({
     },
 
     /**
+     * Convert coin USD value to current quote currency selected.
+     */
+    _convert( usdval ) {
+      usdval = Number( usdval );
+      const q = this.quotes[ this.quote ] || null;
+
+      if ( !q || !q.price || q.symbol === 'USD' ) {
+        return '$ '+ usdval.toFixed( 3 );
+      }
+      const value = Number( ( 100000000 / q.price ) * usdval ) / 100000000;
+      return q.prefix +' '+ value.toFixed( 8 );
+    },
+
+    /**
+     * Used to change the base quote value from a form.
+     */
+    onQuoteChange( e ) {
+      this.quote = e.target.value;
+    },
+
+    /**
+     * Used to change the list sorting column.
+     */
+    onSortChange( e ) {
+      this.sort = e.target.value;
+    },
+
+    /**
+     * Set the base quote price used to calculate
+     * coin value in different currencies.
+     */
+    updateQuotePrice( uniq, price ) {
+      if ( !this.quotes.hasOwnProperty( uniq ) ) return;
+      this.quotes[ uniq ].price = Number( price );
+    },
+
+    /**
      * Fetch managed list of coins from backend.
      * This is the main method that creates the list
      * of coins that will be displayed on the page.
@@ -103,15 +161,15 @@ new Vue({
       }
       axios( request ).then( res => {
         if ( !Array.isArray( res.data ) ) return;
-        let ticker = {};
+        let coins = {};
 
         for ( let i = 0; i < res.data.length; ++i ) {
           const coin = new Coin();
-          coin.setCoinData( res.data[ i ] );
-          ticker[ coin.uniq ] = coin;
+          coin.setData( res.data[ i ] );
+          coins[ coin.uniq ] = coin;
         }
         // update ticker data then move on to next step
-        this.ticker_data = ticker;
+        this.coindata = coins;
         this.fetchCoinPaprika();
 
       }).catch( err => {
@@ -125,31 +183,37 @@ new Vue({
      * merge with the existing list of coins here.
      */
     fetchCoinPaprika() {
-      const quote = this.ticker_quote;
+      const quote = 'USD';
       const request = {
         method: 'GET',
-        url: 'https://api.coinpaprika.com/v1/tickers?quotes=' + quote,
+        url: 'https://api.coinpaprika.com/v1/tickers?quotes='+ quote,
         responseType: 'json',
       }
       axios( request ).then( res => {
         if ( !Array.isArray( res.data ) ) return;
-        let ticker = Object.assign( {}, this.ticker_data );
 
-        for ( let i = 0; i < res.data.length; ++i ) {
-          const coin = res.data[ i ];
-          const nums = coin.quotes[ quote ];
-          const uniq = String( coin.name ).replace( /[^a-zA-Z0-9]+/g, '-' ).toLowerCase();
+        let coins = Object.assign( {}, this.coindata );
+        let count = res.data.length;
 
-          if ( !ticker.hasOwnProperty( uniq ) ) continue;
-          const { name, symbol, rank, circulating_supply, max_supply } = coin;
-          const { price, volume_24h, market_cap, percent_change_24h } = nums;
+        while ( count-- ) {
+          let coin = res.data[ count ];
+          let nums = coin.quotes[ quote ];
+          let uniq = String( coin.name ).replace( /[^a-zA-Z0-9]+/g, '-' ).toLowerCase();
 
-          ticker[ uniq ].setCoinData( { name, symbol, quote } );
-          ticker[ uniq ].setTickerData( { price, circulating_supply, max_supply, volume_24h, market_cap, percent_change_24h, rank } );
+          if ( uniq === 'xrp' ) uniq = 'ripple';
+          if ( !coins.hasOwnProperty( uniq ) ) continue;
+
+          let { id, name, symbol, rank, circulating_supply, max_supply } = coin;
+          let { price, volume_24h, market_cap, percent_change_24h } = nums;
+          let chart_url = `https://graphs.coinpaprika.com/currency/chart/${ id }/7d/svg`;
+
+          this.updateQuotePrice( uniq, price );
+          coins[ uniq ].setData( { name, symbol, quote } );
+          coins[ uniq ].updateTicker( { price, rank, circulating_supply, max_supply, volume_24h, market_cap, percent_change_24h, chart_url } );
         }
         // update ticker data and fetch again after a minute
-        this.ticker_data = ticker;
         setTimeout( this.fetchCoinPaprika, 1000 * 60 );
+        this.coindata = coins;
 
       }).catch( err => {
         console.warn( err );
@@ -163,32 +227,24 @@ new Vue({
      */
     initCoincapStream() {
       const ws = new WebSocket( 'wss://ws.coincap.io/prices?assets=ALL' );
-
-      ws.addEventListener( 'open', e => {
-        console.info( 'WebSocket-Open', e );
-      });
-      ws.addEventListener( 'close', e => {
-        console.info( 'WebSocket-Close', e );
-        setTimeout( this.initCoincapStream, 1000 * 5 );
-      });
-      ws.addEventListener( 'error', e => {
-        console.warn( 'WebSocket-Error', e );
-      });
+      ws.addEventListener( 'error',   e => console.error( 'WebSocket-Error', e ) );
+      ws.addEventListener( 'close',   e => setTimeout( this.initCoincapStream, 1000 * 5 ) );
       ws.addEventListener( 'message', e => {
         const data = JSON.parse( e.data ) || {};
 
         for ( let uniq in data ) {
+          const coin  = this.coindata[ uniq ] || null;
           const price = data[ uniq ];
-          const coin  = this.ticker_data[ uniq ] || null;
 
-          if ( !coin ) continue;
-          coin.setTickerData( { price } );
+          this.updateQuotePrice( uniq, price );
+          if ( coin ) coin.updateTicker( { price } );
         }
       });
     },
 
   },
 
+  // app maunted
   mounted() {
     this.fetchCoinsList();
     this.initCoincapStream();
