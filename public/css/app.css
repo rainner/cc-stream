@@ -26,8 +26,8 @@ html {
 body {
   font-family: 'Open Sans Condensed', monospace;
   font-weight: 700;
-  font-size: 18px;
-  line-height: 1.4em;
+  font-size: 16px;
+  line-height: 1.3em;
   background-color: #e0e0e0;
   background-attachment: fixed;
   background-position: center top;
@@ -52,6 +52,13 @@ button, input, select, optgroup, option, textarea {
 }
 h1, h2, h3, h4, h5 {
   line-height: normal;
+}
+
+.bgtest {
+  background-color: rgba( 0, 0, 0, 0.1 );
+}
+.clickable {
+  cursor: pointer;
 }
 
 /**
@@ -253,12 +260,49 @@ h1, h2, h3, h4, h5 {
   background-color: rgba( 255,255,255, 0.5 );
   border-radius: 5px;
 }
-.ticker-list > .ticker-item > .color {
+.ticker-list > .ticker-item > .ticker-item-icon {
+  width: 32px;
+}
+.ticker-list > .ticker-item > .ticker-item-flex {
+  flex: 1;
+}
+.ticker-list > .ticker-item > .ticker-item-fixed {
+  width: 120px;
+}
+.ticker-list > .ticker-item > .ticker-item-change {
+  width: 90px;
+}
+.ticker-list > .ticker-item > .ticker-item-chart {
+  width: 120px;
+}
+.ticker-list > .ticker-item .same {
   color: grey;
 }
-.ticker-list > .ticker-item.gain > .color {
+.ticker-list > .ticker-item .gain {
   color: green;
 }
-.ticker-list > .ticker-item.loss > .color {
+.ticker-list > .ticker-item .loss {
   color: red;
+}
+
+/**
+  * Pagination
+  */
+.pagination {
+  display: block;
+  position: relative;
+  text-align: center;
+}
+.pagination > button {
+  display: inline-block;
+  margin: 0 .2em;
+  padding: .5em;
+  line-height: 1em;
+  background-color: rgba( 255,255,255, 0.5 );
+  border-radius: 5px;
+  cursor: pointer;
+}
+.pagination > button:hover,
+.pagination > button.active {
+  background-color: rgba( 0,0,0, 0.1 );
 }

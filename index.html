@@ -37,50 +37,76 @@
         </header>
 
         <!-- ticker list -->
-        <main class="ticker-list">
+        <main class="ticker-list push-bottom">
 
           <!-- ticker columns -->
           <div class="ticker-item flex-row flex-middle flex-stretch">
-            <div class="push-right" style="width: 32px"></div>
-            <div class="flex-1 push-right">Coin</div>
-            <div class="flex-1 push-right text-right">Price</div>
-            <div class="flex-1 push-right">Chart 7D</div>
-            <div class="flex-1 push-right text-right">Change 24h</div>
-            <div class="flex-1 push-right text-right">Volume 24h</div>
-            <div class="flex-1 push-right text-right">Market Cap</div>
-            <div class="flex-1 text-right">Supply</div>
+            <div class="ticker-item-icon push-right"></div>
+            <div class="ticker-item-flex push-right clickable" @click="sortBy( 'name', 'asc' )">Coin</div>
+            <div class="ticker-item-fixed text-right push-right clickable" @click="sortBy( 'price', 'desc' )">Price</div>
+            <div class="ticker-item-chart push-right">Live Chart</div>
+            <div class="ticker-item-fixed text-right push-right clickable" @click="sortBy( 'volume_24h', 'desc' )">Volume 24h</div>
+            <div class="ticker-item-fixed text-right push-right clickable" @click="sortBy( 'market_cap', 'desc' )">Market Cap</div>
+            <div class="ticker-item-fixed text-right push-right clickable" @click="sortBy( 'circulating_supply', 'desc' )">Supply</div>
+            <div class="ticker-item-change text-right push-right clickable" @click="sortBy( 'percent_change_1h', 'desc' )">Change 1H</div>
+            <div class="ticker-item-change text-right push-right clickable" @click="sortBy( 'percent_change_24h', 'desc' )">Change 24H</div>
+            <div class="ticker-item-chart">7D Chart</div>
           </div>
 
           <!-- ticker rows -->
-          <div v-for="c of tickerList" class="ticker-item flex-row flex-middle flex-stretch" :class="c.style" :key="c.id">
-            <div class="push-right">
-              <img :src="c.image" width="32" height="32" :alt="c.name" />
+          <div v-for="c of tickerList" class="ticker-item flex-row flex-middle flex-stretch" :key="c.id">
+
+            <div class="ticker-item-icon push-right">
+              <img v-if="c.image" :src="c.image" width="32" height="32" :alt="c.name" />
             </div>
-            <div class="flex-1 push-right">
+
+            <div class="ticker-item-flex push-right">
               <span>{{ c.name }}</span> <br />
-              <span v-if="c.symbol" class="text-faded">{{ c.symbol }}</span>
+              <span class="text-faded">{{ c.symbol || '...' }}</span>
             </div>
-            <div class="flex-1 push-right text-right">
+
+            <div class="ticker-item-fixed text-right push-right">
               <span>{{ c.value }}</span>
             </div>
-            <div class="flex-1 ">
-              <img v-if="c.chart_url" :src="c.chart_url" :alt="c.name" />
+
+            <div class="ticker-item-chart push-right">
+              <linechart :width="120" :height="30" :values="c.graph_data"></linechart>
             </div>
-            <div class="flex-1 push-right text-right color">
-              <span>{{ c.percent_change_24h | toFixed( 2 ) }}%</span>
-            </div>
-            <div class="flex-1 push-right text-right">
+
+            <div class="ticker-item-fixed text-right push-right">
               <span>{{ c.volume_24h | toMoney( 0 ) }}</span>
             </div>
-            <div class="flex-1 push-right text-right">
+
+            <div class="ticker-item-fixed text-right push-right">
               <span>{{ c.market_cap | toMoney( 0 ) }}</span>
             </div>
-            <div class="flex-1 text-right">
+
+            <div class="ticker-item-fixed text-right push-right">
               <span>{{ c.circulating_supply | toMoney( 0 ) }}</span>
             </div>
+
+            <div class="ticker-item-change text-right push-right">
+              <span :class="c.percent_change_1h_style">{{ c.percent_change_1h | toFixed( 2 ) }}%</span>
+            </div>
+
+            <div class="ticker-item-change text-right push-right">
+              <span :class="c.percent_change_24h_style">{{ c.percent_change_24h | toFixed( 2 ) }}%</span>
+            </div>
+
+            <div class="ticker-item-chart">
+              <img v-if="c.graph_7d_url" :src="c.graph_7d_url" :alt="c.name" />
+            </div>
+
           </div>
 
         </main>
+
+        <!-- pagination buttons -->
+        <div class="pagination">
+          <button class="push-right" :class="{ 'active': p.active }" v-for="p of pagesList" :key="p.page" @click="goPage( p.page )">
+            <span>{{ p.page }}</span>
+          </button>
+        </div>
 
       </div> <!-- wrapper -->
     </div> <!-- app -->
