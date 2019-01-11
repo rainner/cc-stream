@@ -1,5 +1,52 @@
 /**
- * App
+ * Line chart component
+ */
+Vue.component( 'linechart', {
+  props: {
+    width: { type: Number, default: 400, required: true },
+    height: { type: Number, default: 40, required: true },
+    values: { type: Array, default: [], required: true },
+  },
+  computed: {
+    viewBox() {
+      return '0 0 '+ this.width +' '+ this.height;
+    },
+    chartPoints() {
+      let data = this.getPoints();
+      let list = data.map( d => ( d.x - 10 ) +','+ d.y );
+      return list.join( ' ' );
+    },
+  },
+  methods: {
+    getPoints() {
+      this.width  = parseFloat( this.width ) || 0;
+      this.height = parseFloat( this.height ) || 0;
+      let min     = this.values.reduce( ( min, val ) => val < min ? val : min, this.values[ 0 ] );
+      let max     = this.values.reduce( ( max, val ) => val > max ? val : max, this.values[ 0 ] );
+      let len     = this.values.length;
+      let half    = this.height / 2;
+      let range   = ( max > min ) ? ( max - min ) : this.height;
+      let gap     = ( len > 1 ) ? ( this.width / ( len - 1 ) ) : 1;
+      let points  = [];
+
+      for ( let i = 0; i < len; ++i ) {
+        let d = this.values[ i ];
+        let val = 2 * ( ( d - min ) / range - 0.5 );
+        let x = i * gap;
+        let y = -val * half * 0.8 + half;
+        points.push( { x, y } );
+      }
+      return points;
+    }
+  },
+  template: `
+  <svg :viewBox="viewBox" xmlns="http://www.w3.org/2000/svg">
+    <polyline class="color" fill="none" stroke="#999" stroke-width="2" stroke-linecap="round" :points="chartPoints" />
+  </svg>`,
+});
+
+/**
+ * Vue app instance
  */
 new Vue({
   el: '#app',
@@ -15,12 +62,16 @@ new Vue({
       'ethereum': { prefix: 'Ξ', symbol: 'ETH', price: 0 },
     },
     // filter options
-    limit: 50,
+    page: 1,
+    pages: 1,
+    limit: 20,
     search: '',
     order: 'desc',
     sort: 'market_cap',
     sortdata: [
+      { column: 'name', name: 'Coin name' },
       { column: 'price', name: 'Current price' },
+      { column: 'percent_change_1h', name: 'Change 1H' },
       { column: 'percent_change_24h', name: 'Change 24H' },
       { column: 'volume_24h', name: 'Volume 24H' },
       { column: 'market_cap', name: 'Market cap' },
@@ -66,19 +117,38 @@ new Vue({
       let count  = keys.length;
       let list   = [];
 
+      // build list and apply search filter
       while ( count-- ) {
         const c = this.coindata[ keys[ count ] ];
-        // apply search filtering if needed
         if ( rgex && !rgex.test( c.symbol +' '+ c.name ) ) continue;
-        // convert price to base quote value
         c.value = this._convert( c.price );
-        // add to output list
         list.push( c );
       }
-      // apply list sorting
+      // calculate pagination
+      let total  = list.length;
+      let start  = ( this.page - 1 ) * this.limit;
+      let end    = ( start + this.limit );
+      this.pages = ( total > this.limit ) ? Math.ceil( total / this.limit ) : 1;
+
+      // final filtered list
       list = this._sort( list, this.sort, this.order );
+      list = list.slice( start, end );
       return list;
-    }
+    },
+
+    /**
+     * Get pagination buttons list
+     */
+    pagesList() {
+      let list = [];
+
+      for ( let i = 0; i < this.pages; ++i ) {
+        const page = ( i + 1 );
+        const active = ( page === this.page );
+        list.push( { page, active } );
+      }
+      return list;
+    },
   },
 
   // custom methods
@@ -126,6 +196,30 @@ new Vue({
     },
 
     /**
+     * Usedf to convert coin name into unique identifier
+     */
+    _uniq( name ) {
+      return String( name ).replace( /[^a-zA-Z0-9]+/g, '-' ).toLowerCase();
+    },
+
+    /**
+     * Used to change list page and jump to top;
+     */
+    goPage( page ) {
+      this.page = parseInt( page );
+      window.scrollTo( 0, 0 );
+    },
+
+    /**
+     * Apply sorting and toggle order
+     */
+    sortBy( key, order ) {
+      if ( this.sort !== key ) { this.order = order || 'asc'; }
+      else { this.order = ( this.order === 'asc' ) ? 'desc' : 'asc'; }
+      this.sort = key;
+    },
+
+    /**
      * Used to change the base quote value from a form.
      */
     onQuoteChange( e ) {
@@ -136,7 +230,7 @@ new Vue({
      * Used to change the list sorting column.
      */
     onSortChange( e ) {
-      this.sort = e.target.value;
+      this.sortBy( e.target.value, 'desc' );
     },
 
     /**
@@ -164,11 +258,13 @@ new Vue({
         let coins = {};
 
         for ( let i = 0; i < res.data.length; ++i ) {
-          const coin = new Coin();
-          coin.setData( res.data[ i ] );
-          coins[ coin.uniq ] = coin;
+          const data = res.data[ i ];
+          const uniq = this._uniq( data.name );
+          const coin = this.coindata[ uniq ] || new Coin();
+
+          coin.setData( data );
+          coins[ uniq ] = coin;
         }
-        // update ticker data then move on to next step
         this.coindata = coins;
         this.fetchCoinPaprika();
 
@@ -192,24 +288,24 @@ new Vue({
       axios( request ).then( res => {
         if ( !Array.isArray( res.data ) ) return;
 
-        let coins = Object.assign( {}, this.coindata );
-        let count = res.data.length;
+        // only the top 100 coins
+        res.data.splice( 100 );
+        let coins = {};
 
-        while ( count-- ) {
-          let coin = res.data[ count ];
-          let nums = coin.quotes[ quote ];
-          let uniq = String( coin.name ).replace( /[^a-zA-Z0-9]+/g, '-' ).toLowerCase();
+        for ( let i = 0; i < res.data.length; ++i ) {
+          let data = res.data[ i ];
+          let nums = data.quotes[ quote ];
+          let uniq = this._uniq( data.name );
+          let coin = this.coindata[ uniq ] || new Coin();
 
-          if ( uniq === 'xrp' ) uniq = 'ripple';
-          if ( !coins.hasOwnProperty( uniq ) ) continue;
-
-          let { id, name, symbol, rank, circulating_supply, max_supply } = coin;
-          let { price, volume_24h, market_cap, percent_change_24h } = nums;
-          let chart_url = `https://graphs.coinpaprika.com/currency/chart/${ id }/7d/svg`;
+          let { id, name, symbol, rank, circulating_supply, max_supply } = data;
+          let { price, volume_24h, market_cap, percent_change_1h, percent_change_24h, percent_change_7d } = nums;
+          let graph_7d_url = `https://graphs.coinpaprika.com/currency/chart/${ id }/7d/svg`;
 
           this.updateQuotePrice( uniq, price );
-          coins[ uniq ].setData( { name, symbol, quote } );
-          coins[ uniq ].updateTicker( { price, rank, circulating_supply, max_supply, volume_24h, market_cap, percent_change_24h, chart_url } );
+          coin.setData( { name, symbol, quote } );
+          coin.updateTicker( { price, rank, circulating_supply, max_supply, volume_24h, market_cap, percent_change_1h, percent_change_24h, percent_change_7d, graph_7d_url } );
+          coins[ uniq ] = coin;
         }
         // update ticker data and fetch again after a minute
         setTimeout( this.fetchCoinPaprika, 1000 * 60 );
@@ -233,8 +329,10 @@ new Vue({
         const data = JSON.parse( e.data ) || {};
 
         for ( let uniq in data ) {
-          const coin  = this.coindata[ uniq ] || null;
           const price = data[ uniq ];
+
+          if ( uniq === 'ripple' ) uniq = 'xrp';
+          const coin = this.coindata[ uniq ] || null;
 
           this.updateQuotePrice( uniq, price );
           if ( coin ) coin.updateTicker( { price } );
@@ -246,7 +344,7 @@ new Vue({
 
   // app maunted
   mounted() {
-    this.fetchCoinsList();
+    this.fetchCoinPaprika();
     this.initCoincapStream();
   }
 });
