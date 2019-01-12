@@ -47,17 +47,17 @@ class Coin {
   setData( data ) {
     Object.assign( this, data );
     this.id = String( this.id ).trim();
+    this.uniq = String( this.uniq ).trim();
     this.name = String( this.name ).trim();
     this.symbol = String( this.symbol ).replace( /[^a-zA-Z]+/g, '' ).toUpperCase();
     this.quote = String( this.quote ).replace( /[^a-zA-Z]+/g, '' ).toUpperCase();
-    this.uniq = String( this.name ).replace( /[^a-zA-Z0-9]+/g, '-' ).toLowerCase();
     this.pair = this.symbol + this.quote;
     this.resolveImage();
   }
 
   /**
    * Set price related ticker data
-   * @param {object}  data  Data object
+   * @param {object}   data   Data object
    */
   updateTicker( data ) {
     Object.assign( this, data );
@@ -74,7 +74,6 @@ class Coin {
     this.percent_change_24h_style = this.calculateStyle( this.percent_change_24h );
     this.percent_change_7d = parseFloat( this.percent_change_7d ) || 0;
     this.percent_change_7d_style = this.calculateStyle( this.percent_change_7d );
-    this.updateLiveGraph( this.price );
   }
 
   /**
@@ -94,17 +93,15 @@ class Coin {
    * @param {float}  price  last price
    */
   updateLiveGraph( price ) {
-    const wait = 1; // 1 sec
-    const total = 900; // 15 mins
+    price = parseFloat( price ) || 0;
+    const wait = 1; // // time in secs
+    const total = 300; // time in secs
     const now = Date.now();
     const elapsed = ( now - this.graph_last ) / 1000;
 
-    if ( !this.graph_data.length ) {
-      this.fakeHistory();
-    }
-    if ( elapsed < wait ) {
-      return;
-    }
+    if ( !this.graph_data.length ) this.fakeHistory();
+    if ( elapsed < wait ) return;
+
     this.graph_data.push( price );
     this.graph_last = now;
 
@@ -121,7 +118,7 @@ class Coin {
     let min = -Math.abs( num );
     let max = Math.abs( num );
 
-    for ( let i = 0; i < 10; ++i ) {
+    for ( let i = 0; i < 5; ++i ) {
       let rand = Math.random() * ( max - min ) + min;
       this.graph_data.push( this.price + rand );
     }

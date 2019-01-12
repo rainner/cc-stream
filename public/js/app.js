@@ -41,7 +41,7 @@ Vue.component( 'linechart', {
   },
   template: `
   <svg :viewBox="viewBox" xmlns="http://www.w3.org/2000/svg">
-    <polyline class="color" fill="none" stroke="#999" stroke-width="2" stroke-linecap="round" :points="chartPoints" />
+    <polyline class="color" fill="none" stroke-width="1.5" stroke-linecap="round" :points="chartPoints" />
   </svg>`,
 });
 
@@ -53,30 +53,25 @@ new Vue({
 
   // app data
   data: {
+
+    // cached coins data is stored here
     coindata: {},
+
+    // these are used for base currency conversion
     quote: 'dollar',
     quotes: {
       'dollar': { prefix: '$', symbol: 'USD', price: 1 },
       'bitcoin': { prefix: '₿', symbol: 'BTC', price: 0 },
-      'litecoin': { prefix: 'Ł', symbol: 'LTC', price: 0 },
       'ethereum': { prefix: 'Ξ', symbol: 'ETH', price: 0 },
     },
-    // filter options
-    page: 1,
-    pages: 1,
-    limit: 20,
+
+    // these are used for searching, filtering and pagination
     search: '',
-    order: 'desc',
     sort: 'market_cap',
-    sortdata: [
-      { column: 'name', name: 'Coin name' },
-      { column: 'price', name: 'Current price' },
-      { column: 'percent_change_1h', name: 'Change 1H' },
-      { column: 'percent_change_24h', name: 'Change 24H' },
-      { column: 'volume_24h', name: 'Volume 24H' },
-      { column: 'market_cap', name: 'Market cap' },
-      { column: 'circulating_supply', name: 'Supply' },
-    ],
+    order: 'desc',
+    pages: 1,
+    page: 1,
+    limit: 20,
   },
 
   // custom filters
@@ -196,7 +191,7 @@ new Vue({
     },
 
     /**
-     * Usedf to convert coin name into unique identifier
+     * Used to convert coin name into unique identifier
      */
     _uniq( name ) {
       return String( name ).replace( /[^a-zA-Z0-9]+/g, '-' ).toLowerCase();
@@ -227,15 +222,7 @@ new Vue({
     },
 
     /**
-     * Used to change the list sorting column.
-     */
-    onSortChange( e ) {
-      this.sortBy( e.target.value, 'desc' );
-    },
-
-    /**
-     * Set the base quote price used to calculate
-     * coin value in different currencies.
+     * Set the base quote price used to calculate conversions.
      */
     updateQuotePrice( uniq, price ) {
       if ( !this.quotes.hasOwnProperty( uniq ) ) return;
@@ -244,8 +231,6 @@ new Vue({
 
     /**
      * Fetch managed list of coins from backend.
-     * This is the main method that creates the list
-     * of coins that will be displayed on the page.
      */
     fetchCoinsList() {
       const request = {
@@ -258,11 +243,12 @@ new Vue({
         let coins = {};
 
         for ( let i = 0; i < res.data.length; ++i ) {
-          const data = res.data[ i ];
-          const uniq = this._uniq( data.name );
-          const coin = this.coindata[ uniq ] || new Coin();
+          let data = res.data[ i ];
+          let { id, name, symbol, image } = data;
+          let uniq = this._uniq( name );
+          let coin = this.coindata[ uniq ] || new Coin();
 
-          coin.setData( data );
+          coin.setData( { id, name, symbol, image } );
           coins[ uniq ] = coin;
         }
         this.coindata = coins;
@@ -275,8 +261,6 @@ new Vue({
 
     /**
      * Fetch ticker data from coinpaprika.
-     * This will fetch new data for each coin and
-     * merge with the existing list of coins here.
      */
     fetchCoinPaprika() {
       const quote = 'USD';
@@ -288,7 +272,8 @@ new Vue({
       axios( request ).then( res => {
         if ( !Array.isArray( res.data ) ) return;
 
-        // only the top 100 coins
+        // only the top 100 coins by rank
+        res.data = this._sort( res.data, 'rank', 'asc' );
         res.data.splice( 100 );
         let coins = {};
 
@@ -303,7 +288,7 @@ new Vue({
           let graph_7d_url = `https://graphs.coinpaprika.com/currency/chart/${ id }/7d/svg`;
 
           this.updateQuotePrice( uniq, price );
-          coin.setData( { name, symbol, quote } );
+          coin.setData( { id, uniq, name, symbol, quote } );
           coin.updateTicker( { price, rank, circulating_supply, max_supply, volume_24h, market_cap, percent_change_1h, percent_change_24h, percent_change_7d, graph_7d_url } );
           coins[ uniq ] = coin;
         }
@@ -317,25 +302,25 @@ new Vue({
     },
 
     /**
-     * Start live stream to coincap api.
-     * This stream gets live prices for coins
-     * that can be merged with the list of coins here.
+     * Update price of coins from alternative stream api if possible.
      */
     initCoincapStream() {
       const ws = new WebSocket( 'wss://ws.coincap.io/prices?assets=ALL' );
-      ws.addEventListener( 'error',   e => console.error( 'WebSocket-Error', e ) );
-      ws.addEventListener( 'close',   e => setTimeout( this.initCoincapStream, 1000 * 5 ) );
+      ws.addEventListener( 'error', e => console.error( 'WebSocket-Error', e ) );
+      ws.addEventListener( 'close', e => setTimeout( this.initCoincapStream, 1000 * 5 ) );
       ws.addEventListener( 'message', e => {
         const data = JSON.parse( e.data ) || {};
 
         for ( let uniq in data ) {
           const price = data[ uniq ];
+          this.updateQuotePrice( uniq, price );
 
           if ( uniq === 'ripple' ) uniq = 'xrp';
           const coin = this.coindata[ uniq ] || null;
 
-          this.updateQuotePrice( uniq, price );
-          if ( coin ) coin.updateTicker( { price } );
+          if ( !coin ) continue;
+          coin.updateTicker( { price } );
+          coin.updateLiveGraph( price );
         }
       });
     },
