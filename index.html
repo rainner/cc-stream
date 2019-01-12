@@ -20,15 +20,12 @@
 
         <!-- ticker header -->
         <header class="top-header flex-row flex-middle flex-space push-top push-bottom">
-          <h1>Crypto Ticker</h1>
-          <div>
+          <div class="push-right">
+            <h1>Crypto Ticker</h1>
+          </div>
+          <div class="flex-1 push-right">
             <select @change="onQuoteChange">
               <option v-for="( q, uniq ) in quotes" :key="uniq" :value="uniq" :selected="uniq === quote">{{ q.prefix }} {{ q.symbol }}</option>
-            </select>
-          </div>
-          <div>
-            <select @change="onSortChange">
-              <option v-for="s of sortdata" :key="s.column" :value="s.column" :selected="s.column === sort">{{ s.name }}</option>
             </select>
           </div>
           <div>
@@ -53,6 +50,11 @@
             <div class="ticker-item-chart">7D Chart</div>
           </div>
 
+          <!-- temp loader placeholder -->
+          <div v-if="!tickerList.length" class="ticker-loader ticker-item flex-row flex-middle flex-center">
+            <span class="same">Waiting for ticker data...</span>
+          </div>
+
           <!-- ticker rows -->
           <div v-for="c of tickerList" class="ticker-item flex-row flex-middle flex-stretch" :key="c.id">
 
@@ -70,7 +72,7 @@
             </div>
 
             <div class="ticker-item-chart push-right">
-              <linechart :width="120" :height="30" :values="c.graph_data"></linechart>
+              <linechart :width="120" :height="30" :values="c.graph_data" :class="c.percent_change_1h_style"></linechart>
             </div>
 
             <div class="ticker-item-fixed text-right push-right">
