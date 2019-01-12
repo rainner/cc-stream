@@ -94,7 +94,7 @@ class Coin {
    */
   updateLiveGraph( price ) {
     price = parseFloat( price ) || 0;
-    const wait = 1; // // time in secs
+    const wait = 1; // time in secs
     const total = 300; // time in secs
     const now = Date.now();
     const elapsed = ( now - this.graph_last ) / 1000;
@@ -106,7 +106,7 @@ class Coin {
     this.graph_last = now;
 
     if ( this.graph_data.length > total ) {
-      this.graph_data.splice( this.graph_data.length - total );
+      this.graph_data.splice( 0, this.graph_data.length - total );
     }
   }
 
