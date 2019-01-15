@@ -1,7 +1,7 @@
 {
   "name": "cc-stream",
   "version": "1.0.0",
-  "description": "Cryptocompare Websocket stream tests.",
+  "description": "Custom live crypto ticker development for coinrated.",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

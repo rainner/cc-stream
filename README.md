@@ -4,6 +4,6 @@
 
 # cc-stream
 
-Cryptocompare Websocket stream tests.
+Custom live crypto ticker development for coinrated.
 
 ##### [Test it out here][demo]
