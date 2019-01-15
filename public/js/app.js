@@ -240,7 +240,6 @@ new Vue({
           coin.setData( { id, uniq, name, symbol, quote } );
           coin.updateTicker( { rank, price, ath_price, circulating_supply, max_supply, volume_24h, market_cap, percent_change_1h, percent_change_24h, percent_change_7d, percent_change_30d, percent_change_1y } );
           coin.convertPrice( q.symbol, q.price, q.prefix );
-          coin.updateLiveGraph();
           coins[ uniq ] = coin;
         }
 
