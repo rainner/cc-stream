@@ -1,51 +1,4 @@
 /**
- * Line chart component
- */
-Vue.component( 'linechart', {
-  props: {
-    width: { type: Number, default: 400, required: true },
-    height: { type: Number, default: 40, required: true },
-    values: { type: Array, default: [], required: true },
-  },
-  computed: {
-    viewBox() {
-      return '0 0 '+ this.width +' '+ this.height;
-    },
-    chartPoints() {
-      let data = this.getPoints();
-      let list = data.map( d => ( d.x - 10 ) +','+ d.y );
-      return list.join( ' ' );
-    },
-  },
-  methods: {
-    getPoints() {
-      this.width  = parseFloat( this.width ) || 0;
-      this.height = parseFloat( this.height ) || 0;
-      let min     = this.values.reduce( ( min, val ) => val < min ? val : min, this.values[ 0 ] );
-      let max     = this.values.reduce( ( max, val ) => val > max ? val : max, this.values[ 0 ] );
-      let len     = this.values.length;
-      let half    = this.height / 2;
-      let range   = ( max > min ) ? ( max - min ) : this.height;
-      let gap     = ( len > 1 ) ? ( this.width / ( len - 1 ) ) : 1;
-      let points  = [];
-
-      for ( let i = 0; i < len; ++i ) {
-        let d = this.values[ i ];
-        let val = 2 * ( ( d - min ) / range - 0.5 );
-        let x = i * gap;
-        let y = -val * half * 0.8 + half;
-        points.push( { x, y } );
-      }
-      return points;
-    }
-  },
-  template: `
-  <svg :viewBox="viewBox" xmlns="http://www.w3.org/2000/svg">
-    <polyline class="color" fill="none" stroke-width="1.5" stroke-linecap="round" :points="chartPoints" />
-  </svg>`,
-});
-
-/**
  * Vue app instance
  */
 new Vue({
@@ -67,36 +20,12 @@ new Vue({
 
     // these are used for searching, filtering and pagination
     search: '',
+    tab: 'coins', // coins, rates, social
     sort: 'market_cap',
     order: 'desc',
     pages: 1,
     page: 1,
     limit: 20,
-  },
-
-  // custom filters
-  filters: {
-
-    /**
-     * Convert floating point value to fixed number.
-     */
-    toFixed( num, decimals ) {
-      decimals = Number( decimals ) || 0;
-      return Number( num ).toFixed( decimals );
-    },
-
-    /**
-     * Convert large number to comma separated value.
-     */
-    toMoney( num, fixed ) {
-      num   = parseFloat( num ) || 0;
-      fixed = parseInt( fixed ) || 0;
-      let a = [ '', 'K', 'M', 'B', 'T', '', '', '' ];
-      let o = { style: 'decimal', minimumFractionDigits: fixed, maximumFractionDigits: fixed };
-      let n = new Intl.NumberFormat( 'en-US', o ).format( num );
-      let p = n.split( ',' );
-      return ( p.length ) ? n +' '+ a[ p.length - 1 ] : n;
-    },
   },
 
   // computed methods
@@ -116,7 +45,6 @@ new Vue({
       while ( count-- ) {
         const c = this.coindata[ keys[ count ] ];
         if ( rgex && !rgex.test( c.symbol +' '+ c.name ) ) continue;
-        c.value = this._convert( c.price );
         list.push( c );
       }
       // calculate pagination
@@ -177,24 +105,17 @@ new Vue({
     },
 
     /**
-     * Convert coin USD value to current quote currency selected.
-     */
-    _convert( usdval ) {
-      usdval = Number( usdval );
-      const q = this.quotes[ this.quote ] || null;
-
-      if ( !q || !q.price || q.symbol === 'USD' ) {
-        return '$ '+ usdval.toFixed( 3 );
-      }
-      const value = Number( ( 100000000 / q.price ) * usdval ) / 100000000;
-      return q.prefix +' '+ value.toFixed( 8 );
-    },
-
-    /**
      * Used to convert coin name into unique identifier
      */
     _uniq( name ) {
       return String( name ).replace( /[^a-zA-Z0-9]+/g, '-' ).toLowerCase();
+    },
+
+    /**
+     * Check if a tab is selected
+     */
+    isTab( tab ) {
+      return ( this.tab === tab );
     },
 
     /**
@@ -215,10 +136,47 @@ new Vue({
     },
 
     /**
+     * Toggle fav for a coin and save to store
+     */
+    toggleFav( uniq, isfav ) {
+      let coin = this.coindata[ uniq ] || null;
+      let data = {};
+
+      if ( coin ) coin.setFavorite( !isfav );
+
+      for ( let id in this.coindata ) {
+        let toggle = this.coindata[ id ].isfav ? true : false;
+        if ( toggle ) data[ id ] = toggle;
+      }
+      window.localStorage.setItem( 'fav_coins_data', JSON.stringify( data ) );
+    },
+
+    /**
+     * Load saved favs from store
+     */
+    loadFavs() {
+      let json = window.localStorage.getItem( 'fav_coins_data' ) || '{}';
+      let data = JSON.parse( json );
+
+      for ( let uniq in data ) {
+        let coin = this.coindata[ uniq ] || null;
+        if ( coin ) coin.setFavorite( data[ uniq ] );
+      }
+    },
+
+    /**
      * Used to change the base quote value from a form.
      */
     onQuoteChange( e ) {
       this.quote = e.target.value;
+      this.resetLiveGraphs();
+    },
+
+    /**
+     * Used to change the current active tab
+     */
+    onTabChange( e ) {
+      this.tab = e.target.value;
     },
 
     /**
@@ -230,33 +188,18 @@ new Vue({
     },
 
     /**
-     * Fetch managed list of coins from backend.
+     * Used to reset live graphs on all coins.
      */
-    fetchCoinsList() {
-      const request = {
-        method: 'GET',
-        url: 'public/static/coins.json', // change me
-        responseType: 'json',
+    resetLiveGraphs() {
+      let q = this.quotes[ this.quote ];
+      let keys = Object.keys( this.coindata );
+      let count = keys.length;
+
+      while ( count-- ) {
+        let coin = this.coindata[ keys[ count ] ];
+        coin.convertPrice( q.symbol, q.price, q.prefix );
+        coin.flushLiveGraph();
       }
-      axios( request ).then( res => {
-        if ( !Array.isArray( res.data ) ) return;
-        let coins = {};
-
-        for ( let i = 0; i < res.data.length; ++i ) {
-          let data = res.data[ i ];
-          let { id, name, symbol, image } = data;
-          let uniq = this._uniq( name );
-          let coin = this.coindata[ uniq ] || new Coin();
-
-          coin.setData( { id, name, symbol, image } );
-          coins[ uniq ] = coin;
-        }
-        this.coindata = coins;
-        this.fetchCoinPaprika();
-
-      }).catch( err => {
-        console.warn( err );
-      });
     },
 
     /**
@@ -269,13 +212,16 @@ new Vue({
         url: 'https://api.coinpaprika.com/v1/tickers?quotes='+ quote,
         responseType: 'json',
       }
+
       axios( request ).then( res => {
         if ( !Array.isArray( res.data ) ) return;
+
+        let q = this.quotes[ this.quote ];
+        let coins = {};
 
         // only the top 100 coins by rank
         res.data = this._sort( res.data, 'rank', 'asc' );
         res.data.splice( 100 );
-        let coins = {};
 
         for ( let i = 0; i < res.data.length; ++i ) {
           let data = res.data[ i ];
@@ -283,18 +229,60 @@ new Vue({
           let uniq = this._uniq( data.name );
           let coin = this.coindata[ uniq ] || new Coin();
 
+          // coin data from api for each coin
           let { id, name, symbol, rank, circulating_supply, max_supply } = data;
-          let { price, volume_24h, market_cap, percent_change_1h, percent_change_24h, percent_change_7d } = nums;
-          let graph_7d_url = `https://graphs.coinpaprika.com/currency/chart/${ id }/7d/svg`;
+          let { price, ath_price, volume_24h, market_cap, percent_change_1h, percent_change_24h, percent_change_7d, percent_change_30d, percent_change_1y } = nums;
 
+          // keep selected conversion quote price updated
           this.updateQuotePrice( uniq, price );
+
+          // update coin data and convert price
           coin.setData( { id, uniq, name, symbol, quote } );
-          coin.updateTicker( { price, rank, circulating_supply, max_supply, volume_24h, market_cap, percent_change_1h, percent_change_24h, percent_change_7d, graph_7d_url } );
+          coin.updateTicker( { rank, price, ath_price, circulating_supply, max_supply, volume_24h, market_cap, percent_change_1h, percent_change_24h, percent_change_7d, percent_change_30d, percent_change_1y } );
+          coin.convertPrice( q.symbol, q.price, q.prefix );
+          coin.updateLiveGraph();
           coins[ uniq ] = coin;
         }
-        // update ticker data and fetch again after a minute
-        setTimeout( this.fetchCoinPaprika, 1000 * 60 );
+
+        // update ticker data and load more data
         this.coindata = coins;
+        this.fetchSocialData();
+        this.loadFavs();
+
+        // fetch again after a minute
+        setTimeout( this.fetchCoinPaprika, 1000 * 60 );
+
+      }).catch( err => {
+        console.warn( err );
+      });
+    },
+
+    /**
+     * Fetch and set social site subs count for each coin
+     */
+    fetchSocialData() {
+      const request = {
+        method: 'GET',
+        url: 'php/coinsdata.json',
+        responseType: 'json',
+      }
+
+      axios( request ).then( res => {
+        if ( typeof res.data !== 'object' ) return;
+
+        for ( let id in res.data ) {
+          let data   = res.data[ id ];
+          let uniq   = this._uniq( data.name || '' );
+          let coin   = this.coindata[ uniq ] || null;
+          let social = data.social || null;
+
+          if ( !coin || !social ) continue;
+          let twitter_subs  = ( social.twitter )  ? social.twitter.subs  : 0;
+          let reddit_subs   = ( social.reddit )   ? social.reddit.subs   : 0;
+          let github_subs   = ( social.github )   ? social.github.subs   : 0;
+          let telegram_subs = ( social.telegram ) ? social.telegram.subs : 0;
+          coin.updateSubs( { twitter_subs, reddit_subs, github_subs, telegram_subs } );
+        }
 
       }).catch( err => {
         console.warn( err );
@@ -309,18 +297,25 @@ new Vue({
       ws.addEventListener( 'error', e => console.error( 'WebSocket-Error', e ) );
       ws.addEventListener( 'close', e => setTimeout( this.initCoincapStream, 1000 * 5 ) );
       ws.addEventListener( 'message', e => {
-        const data = JSON.parse( e.data ) || {};
+
+        let q = this.quotes[ this.quote ];
+        let data = JSON.parse( e.data ) || {};
 
         for ( let uniq in data ) {
           const price = data[ uniq ];
+
+          // keep selected conversion quote price updated
           this.updateQuotePrice( uniq, price );
 
+          // look for coin by unique name
           if ( uniq === 'ripple' ) uniq = 'xrp';
           const coin = this.coindata[ uniq ] || null;
-
           if ( !coin ) continue;
+
+          // update coin data and convert price
           coin.updateTicker( { price } );
-          coin.updateLiveGraph( price );
+          coin.convertPrice( q.symbol, q.price, q.prefix );
+          coin.updateLiveGraph();
         }
       });
     },
