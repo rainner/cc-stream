@@ -222,6 +222,12 @@ h1, h2, h3, h4, h5 {
 .text-faded {
   opacity: .6;
 }
+.text-grey {
+  color: grey;
+}
+.text-active {
+  color: coral;
+}
 
 /**
   * Main wrappers
