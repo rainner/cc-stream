@@ -35,6 +35,11 @@
         <!-- top 5 list -->
         <section class="top5-list flex-row flex-middle flex-space push-bottom">
 
+          <!-- temp loader placeholder -->
+          <div v-if="!topList.length" class="ticker-loader top5-item flex-1 flex-row flex-middle flex-center">
+            <div v-if="!hasCoins" class="text-grey">Waiting for ticker data from API...</div>
+          </div>
+
           <!-- top 5 rows -->
           <div v-for="c of topList" class="top5-item color" :key="c.id">
             <div class="push-bottom">
@@ -48,7 +53,11 @@
 
         </section>
 
-        <hr />
+        <!-- dummy section for space -->
+        <section>
+          <p>&nbsp;</p>
+          <p>&nbsp;</p>
+        </section>
 
         <!-- ticker header -->
         <section class="top-header flex-row flex-middle flex-space push-bottom">
@@ -119,7 +128,8 @@
 
           <!-- temp loader placeholder -->
           <div v-if="!tickerList.length" class="ticker-loader ticker-item flex-row flex-middle flex-center">
-            <span class="same">Waiting for ticker data...</span>
+            <div v-if="!hasCoins" class="text-grey">Waiting for ticker data from API...</div>
+            <div v-if="favs && !hasFavs" class="text-grey">You did not select any favorite coins yet.</div>
           </div>
 
           <!-- ticker rows -->
