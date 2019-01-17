@@ -18,8 +18,40 @@
     <div id="app">
       <div id="wrapper">
 
+         <!-- ticker header -->
+        <section class="top-header flex-row flex-middle flex-space push-bottom">
+          <div class="flex-1 push-right">
+            <h1>Top 5 Coins</h1>
+          </div>
+          <div>
+            <button class="clickable" @click="sortTop( 'percent_change_24h', 'desc' )">Top Gainers 24h</button>
+            <span>&nbsp;|&nbsp;</span>
+            <button class="clickable" @click="sortTop( 'percent_change_24h', 'asc' )">Top Losers 24h</button>
+            <span>&nbsp;|&nbsp;</span>
+            <button class="clickable" @click="sortTop( 'volume_24h', 'desc' )">Top Volume 24h</button>
+          </div>
+        </section>
+
+        <!-- top 5 list -->
+        <section class="top5-list flex-row flex-middle flex-space push-bottom">
+
+          <!-- top 5 rows -->
+          <div v-for="c of topList" class="top5-item color" :key="c.id">
+            <div class="push-bottom">
+              <img v-if="c.image" :src="c.image" width="32" height="32" alt="" />
+              <span>{{ c.name }}</span>
+            </div>
+            <fancynumber :number="c.converted_price" :decimals="c.price_decimals" :prefix="c.price_prefix + ' '"></fancynumber> <br />
+            <fancynumber :number="c.volume_24h" :type="'money'" :prefix="'VOL '" class="text-grey"></fancynumber> <br />
+            <fancynumber :number="c.percent_change_24h" :type="'percent'" :decimals="2" :class="c.percent_change_24h_style"></fancynumber>
+          </div>
+
+        </section>
+
+        <hr />
+
         <!-- ticker header -->
-        <header class="top-header flex-row flex-middle flex-space push-top push-bottom">
+        <section class="top-header flex-row flex-middle flex-space push-bottom">
           <div class="flex-1 push-right">
             <h1>Crypto Ticker</h1>
           </div>
@@ -35,10 +67,16 @@
               <option value="social" :selected="isTab( 'social' )">Social</option>
             </select>
           </div>
+          <div class="flex-1 push-right">
+            <button class="clickable" @click="toggleFavs()">
+              <span :class="{ 'text-grey': !favs, 'text-active': favs }"><big>★</big></span>
+              <span>Favorites</span>
+            </button>
+          </div>
           <div>
             <input type="text" placeholder="Search..." v-model="search" />
           </div>
-        </header>
+        </section>
 
         <!-- ticker list -->
         <main class="ticker-list push-bottom">
@@ -48,34 +86,34 @@
 
             <!-- coin info columns -->
             <div class="ticker-item-icon push-right"></div>
-            <div class="ticker-item-flex push-right clickable" @click="sortBy( 'name', 'asc' )">Coin</div>
-            <div class="ticker-item-fixed text-right push-right clickable" @click="sortBy( 'price', 'desc' )">Price</div>
+            <div class="ticker-item-flex push-right clickable" @click="sortTicker( 'name', 'asc' )">Coin</div>
+            <div class="ticker-item-fixed text-right push-right clickable" @click="sortTicker( 'price', 'desc' )">Price</div>
             <div class="ticker-item-chart push-right">Live Chart</div>
 
             <!-- coins list columns -->
-            <div v-if="isTab( 'coins' )" class="ticker-item-fixed text-right push-right clickable" @click="sortBy( 'volume_24h', 'desc' )">Volume 24h</div>
-            <div v-if="isTab( 'coins' )" class="ticker-item-fixed text-right push-right clickable" @click="sortBy( 'market_cap', 'desc' )">Market Cap</div>
-            <div v-if="isTab( 'coins' )" class="ticker-item-fixed text-right push-right clickable" @click="sortBy( 'circulating_supply', 'desc' )">Supply</div>
-            <div v-if="isTab( 'coins' )" class="ticker-item-change text-right push-right clickable" @click="sortBy( 'percent_change_1h', 'desc' )">Change 1H</div>
-            <div v-if="isTab( 'coins' )" class="ticker-item-change text-right push-right clickable" @click="sortBy( 'percent_change_24h', 'desc' )">Change 24H</div>
+            <div v-if="isTab( 'coins' )" class="ticker-item-fixed text-right push-right clickable" @click="sortTicker( 'volume_24h', 'desc' )">Volume 24h</div>
+            <div v-if="isTab( 'coins' )" class="ticker-item-fixed text-right push-right clickable" @click="sortTicker( 'market_cap', 'desc' )">Market Cap</div>
+            <div v-if="isTab( 'coins' )" class="ticker-item-fixed text-right push-right clickable" @click="sortTicker( 'circulating_supply', 'desc' )">Supply</div>
+            <div v-if="isTab( 'coins' )" class="ticker-item-change text-right push-right clickable" @click="sortTicker( 'percent_change_1h', 'desc' )">Change 1H</div>
+            <div v-if="isTab( 'coins' )" class="ticker-item-change text-right push-right clickable" @click="sortTicker( 'percent_change_24h', 'desc' )">Change 24H</div>
             <div v-if="isTab( 'coins' )" class="ticker-item-chart push-right">7D Chart</div>
 
             <!-- rates list columns -->
-            <div v-if="isTab( 'rates' )" class="ticker-item-change text-right push-right clickable" @click="sortBy( 'percent_change_7d', 'desc' )">Change 7d</div>
+            <div v-if="isTab( 'rates' )" class="ticker-item-change text-right push-right clickable" @click="sortTicker( 'percent_change_7d', 'desc' )">Change 7d</div>
             <div v-if="isTab( 'rates' )" class="ticker-item-chart push-right">Chart 7d</div>
-            <div v-if="isTab( 'rates' )" class="ticker-item-change text-right push-right clickable" @click="sortBy( 'percent_change_30d', 'desc' )">Change 30d</div>
+            <div v-if="isTab( 'rates' )" class="ticker-item-change text-right push-right clickable" @click="sortTicker( 'percent_change_30d', 'desc' )">Change 30d</div>
             <div v-if="isTab( 'rates' )" class="ticker-item-chart push-right">Chart 30d</div>
-            <div v-if="isTab( 'rates' )" class="ticker-item-change text-right push-right clickable" @click="sortBy( 'percent_change_1y', 'desc' )">Change 1y</div>
+            <div v-if="isTab( 'rates' )" class="ticker-item-change text-right push-right clickable" @click="sortTicker( 'percent_change_1y', 'desc' )">Change 1y</div>
             <div v-if="isTab( 'rates' )" class="ticker-item-chart push-right">Chart 1y</div>
 
             <!-- social list columns -->
-            <div v-if="isTab( 'social' )" class="ticker-item-fixed text-right push-right clickable" @click="sortBy( 'twitter_subs', 'desc' )">Twitter Subs</div>
-            <div v-if="isTab( 'social' )" class="ticker-item-fixed text-right push-right clickable" @click="sortBy( 'reddit_subs', 'desc' )">Reddit Subs</div>
-            <div v-if="isTab( 'social' )" class="ticker-item-fixed text-right push-right clickable" @click="sortBy( 'github_subs', 'desc' )">Github Subs</div>
-            <div v-if="isTab( 'social' )" class="ticker-item-fixed text-right push-right clickable" @click="sortBy( 'telegram_subs', 'desc' )">Telegram Subs</div>
+            <div v-if="isTab( 'social' )" class="ticker-item-fixed text-right push-right clickable" @click="sortTicker( 'twitter_subs', 'desc' )">Twitter Subs</div>
+            <div v-if="isTab( 'social' )" class="ticker-item-fixed text-right push-right clickable" @click="sortTicker( 'reddit_subs', 'desc' )">Reddit Subs</div>
+            <div v-if="isTab( 'social' )" class="ticker-item-fixed text-right push-right clickable" @click="sortTicker( 'github_subs', 'desc' )">Github Subs</div>
+            <div v-if="isTab( 'social' )" class="ticker-item-fixed text-right push-right clickable" @click="sortTicker( 'telegram_subs', 'desc' )">Telegram Subs</div>
 
             <!-- favs column -->
-            <div class="ticker-item-icon text-right clickable" @click="sortBy( 'isfav', 'desc' )">Fav</div>
+            <div class="ticker-item-icon text-right">Fav</div>
 
           </div>
 
@@ -96,9 +134,9 @@
               <span class="text-faded">{{ c.symbol || '...' }}</span>
             </div>
             <div class="ticker-item-fixed text-right push-right">
-              <fancynumber :number="c.converted_price" :decimals="8" :prefix="c.price_prefix + ' '"></fancynumber>
+              <fancynumber :number="c.converted_price" :decimals="c.price_decimals" :prefix="c.price_prefix + ' '"></fancynumber>
             </div>
-            <div class="ticker-item-chart push-right">
+            <div class="ticker-item-chart push-right color">
               <linechart :width="120" :height="30" :values="c.graph_data" :class="c.percent_change_1h_style"></linechart>
             </div>
 
@@ -112,10 +150,10 @@
             <div v-if="isTab( 'coins' )" class="ticker-item-fixed text-right push-right">
               <fancynumber :number="c.circulating_supply" :type="'money'"></fancynumber>
             </div>
-            <div v-if="isTab( 'coins' )" class="ticker-item-change text-right push-right">
+            <div v-if="isTab( 'coins' )" class="ticker-item-change text-right push-right color">
               <fancynumber :number="c.percent_change_1h" :type="'percent'" :decimals="2" :class="c.percent_change_1h_style"></fancynumber>
             </div>
-            <div v-if="isTab( 'coins' )" class="ticker-item-change text-right push-right">
+            <div v-if="isTab( 'coins' )" class="ticker-item-change text-right push-right color">
               <fancynumber :number="c.percent_change_24h" :type="'percent'" :decimals="2" :class="c.percent_change_24h_style"></fancynumber>
             </div>
             <div v-if="isTab( 'coins' )" class="ticker-item-chart push-right">
@@ -123,19 +161,19 @@
             </div>
 
             <!-- rates list columns -->
-            <div v-if="isTab( 'rates' )" class="ticker-item-change text-right push-right">
+            <div v-if="isTab( 'rates' )" class="ticker-item-change text-right push-right color">
               <fancynumber :number="c.percent_change_7d" :type="'percent'" :decimals="2" :class="c.percent_change_7d_style"></fancynumber>
             </div>
             <div v-if="isTab( 'rates' )" class="ticker-item-chart push-right">
               <img v-if="c.graph_7d_url" :src="c.graph_7d_url" :alt="c.name" />
             </div>
-            <div v-if="isTab( 'rates' )" class="ticker-item-change text-right push-right">
+            <div v-if="isTab( 'rates' )" class="ticker-item-change text-right push-right color">
               <fancynumber :number="c.percent_change_30d" :type="'percent'" :decimals="2" :class="c.percent_change_30d_style"></fancynumber>
             </div>
             <div v-if="isTab( 'rates' )" class="ticker-item-chart push-right">
               <img v-if="c.graph_30d_url" :src="c.graph_30d_url" :alt="c.name" />
             </div>
-            <div v-if="isTab( 'rates' )" class="ticker-item-change text-right push-right">
+            <div v-if="isTab( 'rates' )" class="ticker-item-change text-right push-right color">
               <fancynumber :number="c.percent_change_1y" :type="'percent'" :decimals="2" :class="c.percent_change_1y_style"></fancynumber>
             </div>
             <div v-if="isTab( 'rates' )" class="ticker-item-chart push-right">

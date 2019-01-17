@@ -18,11 +18,16 @@ new Vue({
       'ethereum': { prefix: 'Ξ', symbol: 'ETH', price: 0 },
     },
 
-    // these are used for searching, filtering and pagination
-    search: '',
+    // these are used for searching and sorting
     tab: 'coins', // coins, rates, social
-    sort: 'market_cap',
-    order: 'desc',
+    search: '',
+    favs: false,
+    sort: {
+      top: [ 'percent_change_24h', 'desc' ],
+      ticker: [ 'market_cap', 'desc' ],
+    },
+
+    // these are used for pagination
     pages: 1,
     page: 1,
     limit: 20,
@@ -32,12 +37,31 @@ new Vue({
   computed: {
 
     /**
+     * Get filtered top 5 coins
+     */
+    topList() {
+      let [ sort, order ] = this.sort.top;
+      let keys  = Object.keys( this.coindata );
+      let count = keys.length;
+      let list  = [];
+
+      while ( count-- ) {
+        const c = this.coindata[ keys[ count ] ];
+        list.push( c );
+      }
+      list = this._sort( list, sort, order );
+      list = list.slice( 0, 5 );
+      return list;
+    },
+
+    /**
      * Get filtered ticker list to display
      */
     tickerList() {
-      let keys   = Object.keys( this.coindata );
+      let [ sort, order ] = this.sort.ticker;
       let search = String( this.search ).replace( /[^\w\-]+/g, ' ' ).replace( /\s\s+/g, ' ' ).trim();
       let rgex   = search ? new RegExp( search, 'i' ) : null;
+      let keys   = Object.keys( this.coindata );
       let count  = keys.length;
       let list   = [];
 
@@ -45,6 +69,7 @@ new Vue({
       while ( count-- ) {
         const c = this.coindata[ keys[ count ] ];
         if ( rgex && !rgex.test( c.symbol +' '+ c.name ) ) continue;
+        if ( this.favs && !c.isfav ) continue;
         list.push( c );
       }
       // calculate pagination
@@ -54,7 +79,7 @@ new Vue({
       this.pages = ( total > this.limit ) ? Math.ceil( total / this.limit ) : 1;
 
       // final filtered list
-      list = this._sort( list, this.sort, this.order );
+      list = this._sort( list, sort, order );
       list = list.slice( start, end );
       return list;
     },
@@ -119,6 +144,21 @@ new Vue({
     },
 
     /**
+     * Change current tab
+     */
+    setTab( tab ) {
+      tab = String( tab || '' ).replace( /[^\w\-]+/g, '' );
+      this.tab = ( /^(coins|rates|social)$/.test( tab ) ) ? tab : 'coins';
+    },
+
+    /**
+     * Used to change the current active tab
+     */
+    onTabChange( e ) {
+      this.setTab( e.target.value );
+    },
+
+    /**
      * Used to change list page and jump to top;
      */
     goPage( page ) {
@@ -127,12 +167,34 @@ new Vue({
     },
 
     /**
-     * Apply sorting and toggle order
+     * Apply sorting to the top list
      */
-    sortBy( key, order ) {
-      if ( this.sort !== key ) { this.order = order || 'asc'; }
-      else { this.order = ( this.order === 'asc' ) ? 'desc' : 'asc'; }
-      this.sort = key;
+    sortTop( key, dir ) {
+      this.sort.top = [ key, dir ];
+    },
+
+    /**
+     * Apply sorting to the ticker
+     */
+    sortTicker( key, dir ) {
+      let [ sort, order ] = this.sort.ticker;
+      if ( sort !== key ) { order = dir || 'asc'; }
+      else { order = ( order === 'asc' ) ? 'desc' : 'asc'; }
+      this.sort.ticker = [ key, order ];
+    },
+
+    /**
+     * Used to toggle showing only favs
+     */
+    sortFavs( toggle ) {
+      this.favs = ( typeof toggle === 'boolean' ) ? toggle : false;
+    },
+
+    /**
+     * Used to toggle showing only favs
+     */
+    toggleFavs() {
+      this.favs = !this.favs;
     },
 
     /**
@@ -173,13 +235,6 @@ new Vue({
     },
 
     /**
-     * Used to change the current active tab
-     */
-    onTabChange( e ) {
-      this.tab = e.target.value;
-    },
-
-    /**
      * Set the base quote price used to calculate conversions.
      */
     updateQuotePrice( uniq, price ) {
@@ -197,6 +252,7 @@ new Vue({
 
       while ( count-- ) {
         let coin = this.coindata[ keys[ count ] ];
+        coin.setData( { quote: q.symbol } );
         coin.convertPrice( q.symbol, q.price, q.prefix );
         coin.flushLiveGraph();
       }
@@ -325,6 +381,8 @@ new Vue({
   mounted() {
     this.fetchCoinPaprika();
     this.initCoincapStream();
+    this.setTab( window.location.hash );
+    window.addEventListener( 'hashchange', e => this.setTab( location.hash ) );
   }
 });
 
