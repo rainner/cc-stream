@@ -37,6 +37,27 @@ new Vue({
   computed: {
 
     /**
+     * Check if there are coins loaded
+     */
+    hasCoins() {
+      let count = Object.keys( this.coindata ).length;
+      return count ? true : false;
+    },
+
+    /**
+     * Check if there are favorite coins
+     */
+    hasFavs() {
+      let count = 0;
+
+      for ( let uniq in this.coindata ) {
+        const c = this.coindata[ uniq ];
+        if ( c.isfav ) count++;
+      }
+      return count ? true : false;
+    },
+
+    /**
      * Get filtered top 5 coins
      */
     topList() {
