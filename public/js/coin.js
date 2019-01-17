@@ -24,6 +24,7 @@ class Coin {
     this.ath_price = 0;
     this.converted_price = 0;
     this.price_prefix = '$';
+    this.price_decimals = 8;
     this.volume_24h = 0;
     this.market_cap = 0;
     this.circulating_supply = 0;
@@ -124,8 +125,18 @@ class Coin {
     usdval = Number( usdval || 0 );
     prefix = String( prefix || '' );
 
-    this.converted_price = ( symbol === 'USD' ) ? this.price : Number( ( 100000000 / usdval ) * this.price ) / 100000000;
     this.price_prefix = prefix;
+
+    if ( symbol === 'USD' ) {
+      this.converted_price = this.price;
+      if ( this.price < 0.01 ) { this.price_decimals = 4; } else
+      if ( this.price < 1 ) { this.price_decimals = 3; } else
+      if ( this.price > 1 ) { this.price_decimals = 2; }
+    }
+    else {
+      this.converted_price = Number( ( 100000000 / usdval ) * this.price ) / 100000000;
+      this.price_decimals = 8;
+    }
   }
 
   /**
@@ -184,7 +195,7 @@ class Coin {
    * Come up with some fake history prices to fill in the initial line chart
    */
   fakeHistory() {
-    let num = this.converted_price * 0.0001;
+    let num = this.converted_price * 0.00001;
     let min = -Math.abs( num );
     let max = Math.abs( num );
 
