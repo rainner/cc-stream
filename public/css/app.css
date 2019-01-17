@@ -13,6 +13,7 @@
   box-sizing: border-box;
   appearance: none;
 }
+
 html, body {
   display: block;
   position: relative;
@@ -35,11 +36,13 @@ body {
   background-size: 100%;
   color: #40494f;
 }
+
 article, aside, details, figcaption, figure, footer, header, hgroup,
 menu, nav, section, main, summary, div, h1, h2, h3, h4, h5, h6, hr,
 p, ol, ul, form, img {
   display: block;
 }
+
 button, input, select, optgroup, option, textarea {
   font-family: inherit;
   font-size: inherit;
@@ -50,8 +53,24 @@ button, input, select, optgroup, option, textarea {
   outline: none;
   background: transparent;
 }
+
+input[type="checkbox"] {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+}
+
 h1, h2, h3, h4, h5 {
   line-height: normal;
+}
+
+hr {
+  display: block;
+  overflow: hidden;
+  margin: 1em 0;
+  height: 0;
+  border: 0;
+  border-bottom: 2px solid rgba( 0,0,0, 0.1 );
 }
 
 .bgtest {
@@ -255,6 +274,34 @@ h1, h2, h3, h4, h5 {
 }
 
 /**
+  * Price change colors
+  */
+.color .same {
+  color: slategray;
+  stroke: slategray;
+}
+.color .gain {
+  color: forestgreen;
+  stroke: forestgreen;
+}
+.color .loss {
+  color: firebrick;
+  stroke: firebrick;
+}
+
+.top5-list > .top5-item {
+  padding: 1em;
+  background-color: rgba( 255,255,255, 0.5 );
+  border-radius: 5px;
+  text-align: center;
+  min-width: 180px;
+}
+
+.top5-list > .top5-item img {
+  margin: 0 auto;
+}
+
+/**
   * Ticker list
   */
 .ticker-list {
@@ -284,18 +331,6 @@ h1, h2, h3, h4, h5 {
 }
 .ticker-list > .ticker-item > .ticker-item-chart {
   width: 120px;
-}
-.ticker-list > .ticker-item .same {
-  color: slategray;
-  stroke: slategray;
-}
-.ticker-list > .ticker-item .gain {
-  color: forestgreen;
-  stroke: forestgreen;
-}
-.ticker-list > .ticker-item .loss {
-  color: firebrick;
-  stroke: firebrick;
 }
 
 /**

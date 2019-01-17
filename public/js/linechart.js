@@ -5,7 +5,7 @@ Vue.component( 'linechart', {
 
   template: `
   <svg :viewBox="viewBox" xmlns="http://www.w3.org/2000/svg">
-    <polyline class="color" fill="none" stroke-width="1.2" stroke-linecap="round" :points="chartPoints" />
+    <polyline class="color" fill="none" stroke-width="1.5" stroke-linecap="round" :points="chartPoints" />
   </svg>`,
 
   props: {
