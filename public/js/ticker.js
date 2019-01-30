@@ -1,5 +1,5 @@
 /**
- * Vue app instance
+ * Vue coin ticker app instance
  */
 new Vue({
   el: '#app',
@@ -70,7 +70,7 @@ new Vue({
         const c = this.coindata[ keys[ count ] ];
         list.push( c );
       }
-      list = this._sort( list, sort, order );
+      list = this.$utils.sort( list, sort, order );
       list = list.slice( 0, 5 );
       return list;
     },
@@ -100,7 +100,7 @@ new Vue({
       this.pages = ( total > this.limit ) ? Math.ceil( total / this.limit ) : 1;
 
       // final filtered list
-      list = this._sort( list, sort, order );
+      list = this.$utils.sort( list, sort, order );
       list = list.slice( start, end );
       return list;
     },
@@ -122,40 +122,6 @@ new Vue({
 
   // custom methods
   methods: {
-
-    /**
-     * Helper method for sorting a list.
-     */
-    _sort( list, key, order, ignore ) {
-      return list.sort( ( a, b ) => {
-        if ( a.hasOwnProperty( key ) ) {
-
-          let _a = a[ key ];
-          let _b = b[ key ];
-
-          if ( ignore ) { // sort strings using same case
-            _a = ( typeof _a === 'string' ) ? _a.toUpperCase() : _a;
-            _b = ( typeof _b === 'string' ) ? _b.toUpperCase() : _b;
-          }
-          if ( order === 'asc' ) {
-            if ( _a < _b ) return -1;
-            if ( _a > _b ) return 1;
-          }
-          if ( order === 'desc' ) {
-            if ( _a > _b ) return -1;
-            if ( _a < _b ) return 1;
-          }
-        }
-        return 0;
-      });
-    },
-
-    /**
-     * Used to convert coin name into unique identifier
-     */
-    _uniq( name ) {
-      return String( name ).replace( /[^a-zA-Z0-9]+/g, '-' ).toLowerCase();
-    },
 
     /**
      * Check if a tab is selected
@@ -297,13 +263,13 @@ new Vue({
         let coins = {};
 
         // only the top 100 coins by rank
-        res.data = this._sort( res.data, 'rank', 'asc' );
+        res.data = this.$utils.sort( res.data, 'rank', 'asc' );
         res.data.splice( 100 );
 
         for ( let i = 0; i < res.data.length; ++i ) {
           let data = res.data[ i ];
           let nums = data.quotes[ quote ];
-          let uniq = this._uniq( data.name );
+          let uniq = this.$utils.uniq( data.name );
           let coin = this.coindata[ uniq ] || new Coin();
 
           // coin data from api for each coin
@@ -348,7 +314,7 @@ new Vue({
 
         for ( let id in res.data ) {
           let data   = res.data[ id ];
-          let uniq   = this._uniq( data.name || '' );
+          let uniq   = this.$utils.uniq( data.name || '' );
           let coin   = this.coindata[ uniq ] || null;
           let social = data.social || null;
 
@@ -404,7 +370,8 @@ new Vue({
     this.initCoincapStream();
     this.setTab( window.location.hash );
     window.addEventListener( 'hashchange', e => this.setTab( location.hash ) );
-  }
+  },
+
 });
 
 
