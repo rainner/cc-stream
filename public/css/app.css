@@ -79,6 +79,13 @@ hr {
 .clickable {
   cursor: pointer;
 }
+.faded {
+  opacity: .5;
+}
+.disabled {
+  opacity: .5;
+  pointer-events: none;
+}
 
 /**
   * Flex helpers
@@ -247,6 +254,31 @@ hr {
 .text-active {
   color: coral;
 }
+.text-btn {
+  display: inline-block;
+  text-decoration: none;
+  line-height: 1em;
+  padding: .5em 1em;
+  background-color: brown;
+  color: antiquewhite;
+  border-radius: 100px;
+  cursor: pointer;
+}
+.text-loader {
+  padding: 2em 0;
+  text-align: center;
+  color: darkgray;
+}
+
+/**
+  * Input container
+  */
+.form-input {
+  line-height: 1em;
+  padding: .4em 1em;
+  background-color: rgba( 0,0,0, 0.05 );
+  border-radius: 100px;
+}
 
 /**
   * Main wrappers
@@ -260,6 +292,15 @@ hr {
   position: relative;
   max-width: 1280px;
   margin: 0 auto;
+}
+
+/**
+  * Common card
+  */
+.card {
+  padding: 1em;
+  background-color: rgba( 255,255,255, 0.5 );
+  border-radius: 5px;
 }
 
 /**
@@ -289,6 +330,9 @@ hr {
   stroke: firebrick;
 }
 
+/**
+  * Top 5 coins list
+  */
 .top5-list > .top5-item {
   padding: 1em;
   background-color: rgba( 255,255,255, 0.5 );
@@ -296,7 +340,6 @@ hr {
   text-align: center;
   min-width: 180px;
 }
-
 .top5-list > .top5-item img {
   margin: 0 auto;
 }
@@ -334,23 +377,43 @@ hr {
 }
 
 /**
+  * History list
+  */
+.history-list {
+  position: relative;
+}
+.history-list > .history-item {
+  padding: .5em;
+  border-radius: 5px;
+}
+.history-list > .history-item:nth-child( even ) {
+  background-color: rgba( 0,0,0, 0.05 );
+}
+
+/**
   * Pagination
   */
 .pagination {
   display: block;
   position: relative;
-  text-align: center;
+  /* text-align: center; */
+  font-size: 90%;
 }
 .pagination > button {
   display: inline-block;
-  margin: 0 .2em;
+  margin: 0 .2em 0 0;
   padding: .5em;
   line-height: 1em;
-  background-color: rgba( 255,255,255, 0.5 );
-  border-radius: 5px;
+  min-width: 2em;
+  text-align: center;
+  background-color: rgba( 0,0,0, 0.05 );
+  border-radius: 100px;
   cursor: pointer;
 }
-.pagination > button:hover,
-.pagination > button.active {
+.pagination > button:hover {
   background-color: rgba( 0,0,0, 0.1 );
+}
+.pagination > button.active {
+  background-color: brown;
+  color: antiquewhite;
 }
