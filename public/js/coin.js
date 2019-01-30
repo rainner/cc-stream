@@ -24,7 +24,7 @@ class Coin {
     this.ath_price = 0;
     this.converted_price = 0;
     this.price_prefix = '$';
-    this.price_decimals = 8;
+    this.price_decimals = 3;
     this.volume_24h = 0;
     this.market_cap = 0;
     this.circulating_supply = 0;
