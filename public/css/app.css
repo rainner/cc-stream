@@ -25,16 +25,16 @@ html {
   overflow-y: scroll;
 }
 body {
-  font-family: 'Open Sans Condensed', monospace;
-  font-weight: 700;
-  font-size: 16px;
+  font-family: 'Boogaloo', monospace;
+  font-weight: 400;
+  font-size: 18px;
   line-height: 1.3em;
   background-color: #e0e0e0;
   background-attachment: fixed;
   background-position: center top;
   background-repeat: no-repeat;
   background-size: 100%;
-  color: #40494f;
+  color: #30393f;
 }
 
 article, aside, details, figcaption, figure, footer, header, hgroup,
@@ -61,6 +61,7 @@ input[type="checkbox"] {
 }
 
 h1, h2, h3, h4, h5 {
+  font-weight: inherit;
   line-height: normal;
 }
 
@@ -71,6 +72,10 @@ hr {
   height: 0;
   border: 0;
   border-bottom: 2px solid rgba( 0,0,0, 0.1 );
+}
+
+fancynumber {
+
 }
 
 .bgtest {
@@ -200,6 +205,14 @@ hr {
 /**
   * Type helpers
   */
+.text-clip {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.text-nowrap {
+  white-space: nowrap;
+}
 .text-left {
   text-align: left;
 }
@@ -377,17 +390,53 @@ hr {
 }
 
 /**
-  * History list
+  * Markets list
   */
-.history-list {
+.markets-list {
+ position: relative;
+}
+.markets-list > .markets-list-header {
+  padding: .5em;
+}
+.markets-list > .markets-list-group {
+  margin: .5em 0 0 0;
+  border-radius: 5px;
+  background-color: rgba( 0,0,0, 0.03 );
+}
+.markets-list > .markets-list-group:hover {
+  background-color: rgba( 0,0,0, 0.06 );
+}
+.markets-list > .markets-list-group.active {
+  background-color: rgba( 0,0,0, 0.08 );
+}
+.markets-list > .markets-list-group > .markets-list-item {
+  padding: .5em;
+}
+.markets-list > .markets-list-group > .markets-list-sub {
+  display: none;
+}
+.markets-list > .markets-list-group > .markets-list-sub > .markets-list-sub-item {
+  padding: .2em .5em;
+}
+.markets-list > .markets-list-group > .markets-list-sub > .markets-list-sub-item:nth-child( odd ) {
+  background-color: rgba( 255,255,255, 0.3 );
+}
+.markets-list > .markets-list-group.active > .markets-list-sub {
+ display: block;
+}
+
+/**
+  * Common list
+  */
+.common-list {
   position: relative;
 }
-.history-list > .history-item {
+.common-list > .common-item {
   padding: .5em;
   border-radius: 5px;
 }
-.history-list > .history-item:nth-child( even ) {
-  background-color: rgba( 0,0,0, 0.05 );
+.common-list > .common-item:nth-child( even ) {
+  background-color: rgba( 0,0,0, 0.03 );
 }
 
 /**
