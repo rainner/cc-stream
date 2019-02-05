@@ -9,7 +9,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
     <meta name="description" id="description" content="My awesome web app." />
 
-    <link href="//fonts.googleapis.com/css?family=Open+Sans+Condensed:700" rel="stylesheet">
+    <link href="//fonts.googleapis.com/css?family=Boogaloo" rel="stylesheet" />
     <link rel="stylesheet" href="public/css/app.css" />
 
   </head>
@@ -47,9 +47,9 @@
               <img v-if="c.image" :src="c.image" width="32" height="32" alt="" />
               <span>{{ c.name }}</span>
             </div>
-            <fancynumber :number="c.converted_price" :decimals="c.price_decimals" :prefix="c.price_prefix + ' '"></fancynumber> <br />
-            <fancynumber :number="c.volume_24h" :type="'money'" :prefix="'VOL '" class="text-grey"></fancynumber> <br />
-            <fancynumber :number="c.percent_change_24h" :type="'percent'" :decimals="2" :class="c.percent_change_24h_style"></fancynumber>
+            <fancynumber class="text-nowrap" :number="c.converted_price" :decimals="c.price_decimals" :prefix="c.price_prefix + ' '"></fancynumber> <br />
+            <fancynumber class="text-nowrap" :number="c.volume_24h" :type="'money'" :prefix="'VOL '" class="text-grey"></fancynumber> <br />
+            <fancynumber class="text-nowrap" :number="c.percent_change_24h" :type="'percent'" :decimals="2" :class="c.percent_change_24h_style"></fancynumber>
           </div>
 
         </section>
@@ -145,7 +145,7 @@
               <span class="text-faded">{{ c.symbol || '...' }}</span>
             </div>
             <div class="ticker-item-fixed text-right push-right">
-              <fancynumber :number="c.converted_price" :decimals="c.price_decimals" :prefix="c.price_prefix + ' '"></fancynumber>
+              <fancynumber class="text-nowrap" :number="c.converted_price" :decimals="c.price_decimals" :prefix="c.price_prefix + ' '"></fancynumber>
             </div>
             <div class="ticker-item-chart push-right color">
               <linechart :width="120" :height="30" :values="c.graph_data" :class="c.percent_change_1h_style"></linechart>
@@ -153,19 +153,19 @@
 
             <!-- coins list columns -->
             <div v-if="isTab( 'coins' )" class="ticker-item-fixed text-right push-right">
-              <fancynumber :number="c.volume_24h" :type="'money'"></fancynumber>
+              <fancynumber class="text-nowrap" :number="c.volume_24h" :type="'money'"></fancynumber>
             </div>
             <div v-if="isTab( 'coins' )" class="ticker-item-fixed text-right push-right">
-              <fancynumber :number="c.market_cap" :type="'money'"></fancynumber>
+              <fancynumber class="text-nowrap" :number="c.market_cap" :type="'money'"></fancynumber>
             </div>
             <div v-if="isTab( 'coins' )" class="ticker-item-fixed text-right push-right">
-              <fancynumber :number="c.circulating_supply" :type="'money'"></fancynumber>
+              <fancynumber class="text-nowrap" :number="c.circulating_supply" :type="'money'"></fancynumber>
             </div>
             <div v-if="isTab( 'coins' )" class="ticker-item-change text-right push-right color">
-              <fancynumber :number="c.percent_change_1h" :type="'percent'" :decimals="2" :class="c.percent_change_1h_style"></fancynumber>
+              <fancynumber class="text-nowrap" :number="c.percent_change_1h" :type="'percent'" :decimals="2" :class="c.percent_change_1h_style"></fancynumber>
             </div>
             <div v-if="isTab( 'coins' )" class="ticker-item-change text-right push-right color">
-              <fancynumber :number="c.percent_change_24h" :type="'percent'" :decimals="2" :class="c.percent_change_24h_style"></fancynumber>
+              <fancynumber class="text-nowrap" :number="c.percent_change_24h" :type="'percent'" :decimals="2" :class="c.percent_change_24h_style"></fancynumber>
             </div>
             <div v-if="isTab( 'coins' )" class="ticker-item-chart push-right">
               <img v-if="c.graph_7d_url" :src="c.graph_7d_url" :alt="c.name" />
@@ -173,19 +173,19 @@
 
             <!-- rates list columns -->
             <div v-if="isTab( 'rates' )" class="ticker-item-change text-right push-right color">
-              <fancynumber :number="c.percent_change_7d" :type="'percent'" :decimals="2" :class="c.percent_change_7d_style"></fancynumber>
+              <fancynumber class="text-nowrap" :number="c.percent_change_7d" :type="'percent'" :decimals="2" :class="c.percent_change_7d_style"></fancynumber>
             </div>
             <div v-if="isTab( 'rates' )" class="ticker-item-chart push-right">
               <img v-if="c.graph_7d_url" :src="c.graph_7d_url" :alt="c.name" />
             </div>
             <div v-if="isTab( 'rates' )" class="ticker-item-change text-right push-right color">
-              <fancynumber :number="c.percent_change_30d" :type="'percent'" :decimals="2" :class="c.percent_change_30d_style"></fancynumber>
+              <fancynumber class="text-nowrap" :number="c.percent_change_30d" :type="'percent'" :decimals="2" :class="c.percent_change_30d_style"></fancynumber>
             </div>
             <div v-if="isTab( 'rates' )" class="ticker-item-chart push-right">
               <img v-if="c.graph_30d_url" :src="c.graph_30d_url" :alt="c.name" />
             </div>
             <div v-if="isTab( 'rates' )" class="ticker-item-change text-right push-right color">
-              <fancynumber :number="c.percent_change_1y" :type="'percent'" :decimals="2" :class="c.percent_change_1y_style"></fancynumber>
+              <fancynumber class="text-nowrap" :number="c.percent_change_1y" :type="'percent'" :decimals="2" :class="c.percent_change_1y_style"></fancynumber>
             </div>
             <div v-if="isTab( 'rates' )" class="ticker-item-chart push-right">
               <img v-if="c.graph_1y_url" :src="c.graph_1y_url" :alt="c.name" />
@@ -193,16 +193,16 @@
 
             <!-- social list columns -->
             <div v-if="isTab( 'social' )" class="ticker-item-fixed text-right push-right">
-              <fancynumber :number="c.twitter_subs"></fancynumber>
+              <fancynumber class="text-nowrap" :number="c.twitter_subs"></fancynumber>
             </div>
             <div v-if="isTab( 'social' )" class="ticker-item-fixed text-right push-right">
-              <fancynumber :number="c.reddit_subs"></fancynumber>
+              <fancynumber class="text-nowrap" :number="c.reddit_subs"></fancynumber>
             </div>
             <div v-if="isTab( 'social' )" class="ticker-item-fixed text-right push-right">
-              <fancynumber :number="c.github_subs"></fancynumber>
+              <fancynumber class="text-nowrap" :number="c.github_subs"></fancynumber>
             </div>
             <div v-if="isTab( 'social' )" class="ticker-item-fixed text-right push-right">
-              <fancynumber :number="c.telegram_subs"></fancynumber>
+              <fancynumber class="text-nowrap" :number="c.telegram_subs"></fancynumber>
             </div>
 
             <!-- favs column -->
