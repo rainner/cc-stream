@@ -148,8 +148,8 @@
 
           <!-- pagination buttons -->
           <div class="pagination">
-            <button v-for="p of getPagesList( historyPages, historyPage )" class="push-right" :class="{ 'active': p.active }" :key="p.page" @click="setPage( 'historyPage', p.page )">
-              <span>{{ p.page }}</span>
+            <button v-for="page in historyPages" class="push-right" :class="{ 'active': ( page === historyPage ) }" :key="page" @click="setPage( 'historyPage', page )">
+              <span>{{ page }}</span>
             </button>
           </div>
 
@@ -157,7 +157,16 @@
 
         <!-- page section -->
         <section class="card push-bottom">
-          <h1>{{ coin.name }} Markets</h1>
+
+          <div class="flex-row flex-middle flex-stretch">
+            <div class="flex-1 push-right">
+              <h1>{{ coin.name }} Markets</h1>
+            </div>
+            <div class="form-input">
+              <input type="text" placeholder="Search: USD GBP CNY" v-model="marketsSearch" />
+            </div>
+          </div>
+
           <hr />
 
           <div class="markets-list push-bottom">
@@ -223,8 +232,8 @@
 
           <!-- pagination buttons -->
           <div class="pagination">
-            <button v-for="p of getPagesList( marketsPages, marketsPage )" class="push-right" :class="{ 'active': p.active }" :key="p.page" @click="setPage( 'marketsPage', p.page )">
-              <span>{{ p.page }}</span>
+            <button v-for="page in marketsPages" class="push-right" :class="{ 'active': ( page === marketsPage ) }" :key="page" @click="setPage( 'marketsPage', page )">
+              <span>{{ page }}</span>
             </button>
           </div>
 

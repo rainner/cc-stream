@@ -40,11 +40,11 @@ new Vue({
       '365d' : 31536000,
     },
 
-    // exchanges api data
-    exchangesData: {},
-
     // markets api data
     marketsData: {},
+    marketsBlacklist: [], // skip exchange ids
+    marketsMinVol: 1000, // skip exchange vol below
+    marketsSearch: '',
     marketsPages: 1,
     marketsPage: 1,
     marketsShow: 10,
@@ -53,11 +53,14 @@ new Vue({
   // watch methods
   watch: {
 
-    /**
-     * Refetch coin data when id changes
-     */
+    // Refetch coin data when id changes
     coinid() {
       this.initCoinData();
+    },
+
+    // Back to page 1 when searching market pairs
+    marketsSearch() {
+      this.marketsPage = 1;
     }
   },
 
@@ -79,25 +82,17 @@ new Vue({
     },
 
     /**
-     * Get pagination buttons list
-     */
-    historyPagesList() {
-      let list = [];
-
-      for ( let i = 0; i < this.historyPages; ++i ) {
-        const page = ( i + 1 );
-        const active = ( page === this.historyPage );
-        list.push( { page, active } );
-      }
-      return list;
-    },
-
-    /**
      * Get list of markets
      */
     marketsList() {
-      let list  = Object.values( this.marketsData );
+      let list = Object.values( this.marketsData );
 
+      // apply search
+      if ( this.marketsSearch.length > 1 ) {
+        const match = String( this.marketsSearch ).trim().replace( /[^\w]+/g, '|' );
+        const regxp = new RegExp( '^.*\/('+ match +')$', 'i' );
+        list = list.filter( m => regxp.test( m.pair ) );
+      }
       // calculate pagination
       let total = list.length;
       let start = ( this.marketsPage - 1 ) * this.marketsShow;
@@ -110,19 +105,6 @@ new Vue({
       return list;
     },
 
-    /**
-     * Get pagination buttons list
-     */
-    marketsPagesList() {
-      let list = [];
-
-      for ( let i = 0; i < this.historyPages; ++i ) {
-        const page = ( i + 1 );
-        const active = ( page === this.historyPage );
-        list.push( { page, active } );
-      }
-      return list;
-    },
   },
 
   // custom methods
@@ -150,7 +132,6 @@ new Vue({
       this.fetchCoin();
       this.fetchEvents();
       this.fetchHistory();
-      // this.fetchExchanges();
       this.fetchMarkets();
     },
 
@@ -174,22 +155,6 @@ new Vue({
     },
 
     /**
-     * Get pagation list
-     */
-    getPagesList( total, current ) {
-      total    = Number( total ) || 0;
-      current  = Number( current ) || 0;
-      let list = [];
-
-      for ( let i = 0; i < total; ++i ) {
-        const page = ( i + 1 );
-        const active = ( page === current );
-        list.push( { page, active } );
-      }
-      return list;
-    },
-
-    /**
      * Set the history list page
      */
     setPage( name, page ) {
@@ -197,7 +162,7 @@ new Vue({
     },
 
     /**
-     *
+     * Show/hide market exchanges for a group
      */
     toggleMarketsGroup( pair ) {
       let { active } = this.marketsData[ pair ];
@@ -310,36 +275,6 @@ new Vue({
     },
 
     /**
-     * Fetch exchanges data
-     */
-    fetchExchanges() {
-      const request = {
-        method: 'GET',
-        url: `https://api.coinpaprika.com/v1/coins/${ this.coinid }/exchanges`,
-        responseType: 'json',
-      }
-
-      axios( request ).then( res => {
-        if ( !Array.isArray( res.data ) ) return;
-
-        let list = res.data;
-        let count = list.length;
-        let exchanges = {};
-
-        while ( count-- ) {
-          let { id, name, adjusted_volume_24h_share } = list[ count ];
-          exchanges[ id ] = { name, adjusted_volume_24h_share, markets: {} };
-        }
-        // set data
-        // console.log( exchanges );
-        this.exchangesData = exchanges;
-
-      }).catch( err => {
-        console.warn( err );
-      });
-    },
-
-    /**
      * Fetch markets data
      */
     fetchMarkets() {
@@ -366,7 +301,8 @@ new Vue({
 
           // skip some markets
           if ( coin_symbol !== this.coin.symbol ) continue;
-          if ( volume_24h < 100 ) continue;
+          if ( volume_24h < this.marketsMinVol ) continue;
+          if ( this.marketsBlacklist.indexOf( exchange_id ) >= 0 ) continue;
 
           // init market group data
           if ( !markets[ pair ] ) {

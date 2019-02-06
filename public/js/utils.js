@@ -8,6 +8,13 @@ Vue.prototype.$utils = {
     return String( name ).replace( /[^a-zA-Z0-9]+/g, '-' ).toLowerCase();
   },
 
+  // get search results off a list for an obj key
+  search( list, key, search ) {
+    search = String( search || '' ).replace( /[^\w\/\ ]+/g, '' ).trim();
+    const regxp = new RegExp( search, 'i' );
+    return list.filter( item => regxp.test( item[ key ] ) );
+  },
+
   // helper method for sorting a list.
   sort( list, key, order, ignore ) {
     return list.sort( ( a, b ) => {
