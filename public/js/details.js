@@ -47,7 +47,7 @@ new Vue({
     marketsData: {},
     marketsPages: 1,
     marketsPage: 1,
-    marketsShow: 100,
+    marketsShow: 10,
   },
 
   // watch methods
@@ -136,6 +136,14 @@ new Vue({
     },
 
     /**
+     * Get coin id from url hash
+     */
+    getHashId() {
+      const hash = String( window.location.hash || '' ).replace( /[^\w\-]+/g, '' ).trim();
+      this.coinid = hash ? hash : 'btc-bitcoin';
+    },
+
+    /**
      * Fetch and load coin data
      */
     initCoinData() {
@@ -221,7 +229,6 @@ new Vue({
       }
 
       axios( request ).then( res => {
-
         let data = res.data;
         let nums = data.quotes[ quote ];
         let uniq = this.$utils.uniq( data.name );
@@ -315,14 +322,15 @@ new Vue({
       axios( request ).then( res => {
         if ( !Array.isArray( res.data ) ) return;
 
-        let list      = res.data;
-        let count     = list.length;
+        let list = res.data;
+        let count = list.length;
         let exchanges = {};
 
         while ( count-- ) {
           let { id, name, adjusted_volume_24h_share } = list[ count ];
           exchanges[ id ] = { name, adjusted_volume_24h_share, markets: {} };
         }
+        // set data
         // console.log( exchanges );
         this.exchangesData = exchanges;
 
@@ -335,7 +343,7 @@ new Vue({
      * Fetch markets data
      */
     fetchMarkets() {
-      const quote   = 'USD';
+      const quote = 'USD';
       const request = {
         method: 'GET',
         url: `https://api.coinpaprika.com/v1/coins/${ this.coinid }/markets?quotes=${ quote }`,
@@ -345,21 +353,35 @@ new Vue({
       axios( request ).then( res => {
         if ( !Array.isArray( res.data ) ) return;
 
-        let list    = res.data;
-        let count   = list.length;
+        let list = res.data;
+        let count = list.length;
         let markets = {};
+        let combined_volumes = 0;
 
         while ( count-- ) {
           // api data
           let { exchange_id, exchange_name, pair, market_url, adjusted_volume_24h_share } = list[ count ];
           let { price, volume_24h } = list[ count ].quotes[ quote ];
+          let [ coin_symbol, quote_symbol ] = pair.split( '/' );
 
-          // skip exchanges with low volume
-          if ( volume_24h < 1000 ) continue;
+          // skip some markets
+          if ( coin_symbol !== this.coin.symbol ) continue;
+          if ( volume_24h < 100 ) continue;
 
           // init market group data
           if ( !markets[ pair ] ) {
-            markets[ pair ] = { pair, total_share: 0, total_volume: 0, total_exchanges: 0, average_price: 0, exchanges: {}, active: false };
+            markets[ pair ] = {
+              pair,
+              coin_symbol,
+              quote_symbol,
+              adjusted_volume_24h_share,
+              total_share: 0,
+              total_volume: 0,
+              total_exchanges: 0,
+              average_price: 0,
+              exchanges: {},
+              active: false, // toggle for dropdown list
+            };
           }
           // add up some values
           if ( !markets[ pair ].exchanges[ exchange_id ] ) {
@@ -367,7 +389,7 @@ new Vue({
             markets[ pair ].average_price += price;
           }
           // build group data
-          markets[ pair ].total_share += adjusted_volume_24h_share;
+          combined_volumes += volume_24h;
           markets[ pair ].total_volume += volume_24h;
           markets[ pair ].exchanges[ exchange_id ] = {
             pair,
@@ -381,17 +403,16 @@ new Vue({
 
         // finalize some things
         for ( let pair in markets ) {
-
-          // calculare average market price from total exchanges
-          let { average_price, total_exchanges } = markets[ pair ];
+          // calculare average price and share from totals
+          let { average_price, total_exchanges, total_volume } = markets[ pair ];
           markets[ pair ].average_price = ( average_price / total_exchanges );
-
+          markets[ pair ].total_share = ( total_volume / combined_volumes );
           // sort list of exchanges by volume
           let exchanges = Object.values( markets[ pair ].exchanges );
           exchanges = this.$utils.sort( exchanges, 'volume_24h', 'desc' );
           markets[ pair ].exchanges = exchanges;
         }
-
+        // set data
         // console.log( markets );
         this.marketsData = markets;
 
@@ -404,6 +425,7 @@ new Vue({
 
   // app maunted
   mounted() {
+    this.getHashId();
     this.initCoinData();
     this.initCoincapStream();
   },
