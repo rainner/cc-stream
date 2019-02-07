@@ -160,6 +160,55 @@
 
           <div class="flex-row flex-middle flex-stretch">
             <div class="flex-1 push-right">
+              <h1>{{ coin.name }} Exchanges</h1>
+            </div>
+            <div class="form-input">
+              <input type="text" placeholder="Search..." v-model="exchangesSearch" />
+            </div>
+          </div>
+
+          <hr />
+
+          <div class="common-list push-bottom">
+
+            <div class="common-item flex-row flex-middle flex-stretch text-grey">
+              <div class="flex-1">Exchange</div>
+              <div class="flex-1 text-right">Volume</div>
+              <div class="flex-1 text-right">Share</div>
+            </div>
+
+            <div v-if="!exchangesList.length" class="text-loader">
+              Waiting for exchanges data...
+            </div>
+
+            <div v-for="e of exchangesList" class="common-item flex-row flex-middle flex-stretch" :key="e.exchange_id">
+              <div class="flex-1">
+                <span>{{ e.exchange_name }}</span>
+              </div>
+              <div class="flex-1 text-right">
+                <fancynumber class="text-nowrap" :number="e.total_volume" :type="'money'"></fancynumber>
+              </div>
+              <div class="flex-1 text-right">
+                <fancynumber class="text-nowrap" :number="e.total_share" :type="'percent'" :decimals="8"></fancynumber>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- pagination buttons -->
+          <div class="pagination">
+            <button v-for="page in exchangesPages" class="push-right" :class="{ 'active': ( page === exchangesPage ) }" :key="page" @click="setPage( 'exchangesPage', page )">
+              <span>{{ page }}</span>
+            </button>
+          </div>
+
+        </section>
+
+        <!-- page section -->
+        <section class="card push-bottom">
+
+          <div class="flex-row flex-middle flex-stretch">
+            <div class="flex-1 push-right">
               <h1>{{ coin.name }} Markets</h1>
             </div>
             <div class="form-input">

@@ -12,6 +12,7 @@ new Vue({
     // coin data
     coinid: 'btc-bitcoin',
     coin: new Coin(),
+    ws: null,
 
     // events api data
     eventsData: [],
@@ -39,6 +40,13 @@ new Vue({
       '30d'  : 2419200,
       '365d' : 31536000,
     },
+
+    // exchanges api data
+    exchangesData: {},
+    exchangesSearch: '',
+    exchangesPages: 1,
+    exchangesPage: 1,
+    exchangesShow: 10,
 
     // markets api data
     marketsData: {},
@@ -77,6 +85,29 @@ new Vue({
       let end    = ( start + this.historyShow );
 
       this.historyPages = ( total > this.historyShow ) ? Math.ceil( total / this.historyShow ) : 1;
+      list = list.slice( start, end );
+      return list;
+    },
+
+    /**
+     * Get list of markets
+     */
+    exchangesList() {
+      let list = Object.values( this.exchangesData );
+
+      // apply search
+      if ( this.exchangesSearch.length > 1 ) {
+        const regxp = new RegExp( '^('+ this.exchangesSearch +')', 'i' );
+        list = list.filter( e => regxp.test( e.exchange_name ) );
+      }
+      // calculate pagination
+      let total = list.length;
+      let start = ( this.exchangesPage - 1 ) * this.exchangesShow;
+      let end   = ( start + this.exchangesShow );
+      this.exchangesPages = ( total > this.exchangesShow ) ? Math.ceil( total / this.exchangesShow ) : 1;
+
+      // sort and slice the list
+      list = this.$utils.sort( list, 'total_volume', 'desc' );
       list = list.slice( start, end );
       return list;
     },
@@ -139,18 +170,14 @@ new Vue({
      * Update price of coins from alternative stream api if possible.
      */
     initCoincapStream() {
-      const ws = new WebSocket( 'wss://ws.coincap.io/prices?assets=ALL' );
-      ws.addEventListener( 'error', e => console.error( 'WebSocket-Error', e ) );
-      ws.addEventListener( 'close', e => setTimeout( this.initCoincapStream, 1000 * 5 ) );
-      ws.addEventListener( 'message', e => {
-
-        let data = JSON.parse( e.data ) || {};
-
-        for ( let uniq in data ) {
-          if ( uniq === 'ripple' ) uniq = 'xrp';
-          if ( uniq !== this.coin.uniq ) continue;
-          this.coin.updateTicker( { price: data[ uniq ] } );
-        }
+      if ( this.ws ) this.ws.close();
+      this.ws = new WebSocket( 'wss://ws.coincap.io/prices?assets=' + this.coin.uniq );
+      this.ws.addEventListener( 'error', e => console.error( 'WebSocket-Error', e ) );
+      this.ws.addEventListener( 'close', e => setTimeout( this.initCoincapStream, 1000 * 5 ) );
+      this.ws.addEventListener( 'message', e => {
+        let data  = JSON.parse( e.data ) || {};
+        let price = data[ this.coin.uniq ];
+        this.coin.updateTicker( { price } );
       });
     },
 
@@ -202,6 +229,7 @@ new Vue({
 
         this.coin.setData( { id, uniq, name, symbol, quote } );
         this.coin.updateTicker( { rank, price, ath_price, circulating_supply, max_supply, volume_24h, market_cap, percent_change_1h, percent_change_24h, percent_change_7d, percent_change_30d, percent_change_1y } );
+        this.initCoincapStream();
 
       }).catch( err => {
         console.warn( err );
@@ -290,6 +318,7 @@ new Vue({
 
         let list = res.data;
         let count = list.length;
+        let exchanges = {};
         let markets = {};
         let combined_volumes = 0;
 
@@ -303,6 +332,16 @@ new Vue({
           if ( coin_symbol !== this.coin.symbol ) continue;
           if ( volume_24h < this.marketsMinVol ) continue;
           if ( this.marketsBlacklist.indexOf( exchange_id ) >= 0 ) continue;
+
+          // init exchange data
+          if ( !exchanges[ exchange_id ] ) {
+            exchanges[ exchange_id ] = {
+              exchange_id,
+              exchange_name,
+              total_volume: 0,
+              total_share: 0,
+            };
+          }
 
           // init market group data
           if ( !markets[ pair ] ) {
@@ -319,13 +358,16 @@ new Vue({
               active: false, // toggle for dropdown list
             };
           }
+
           // add up some values
           if ( !markets[ pair ].exchanges[ exchange_id ] ) {
             markets[ pair ].total_exchanges += 1;
             markets[ pair ].average_price += price;
           }
+
           // build group data
           combined_volumes += volume_24h;
+          exchanges[ exchange_id ].total_volume += volume_24h;
           markets[ pair ].total_volume += volume_24h;
           markets[ pair ].exchanges[ exchange_id ] = {
             pair,
@@ -337,7 +379,7 @@ new Vue({
           };
         }
 
-        // finalize some things
+        // calculate pair totals
         for ( let pair in markets ) {
           // calculare average price and share from totals
           let { average_price, total_exchanges, total_volume } = markets[ pair ];
@@ -348,8 +390,17 @@ new Vue({
           exchanges = this.$utils.sort( exchanges, 'volume_24h', 'desc' );
           markets[ pair ].exchanges = exchanges;
         }
+
+        // calculate exchange shares
+        for ( let eid in exchanges ) {
+          let { total_volume } = exchanges[ eid ];
+          exchanges[ eid ].total_share = ( total_volume / combined_volumes );
+        }
+
         // set data
         // console.log( markets );
+        // console.log( exchanges );
+        this.exchangesData = exchanges;
         this.marketsData = markets;
 
        }).catch( err => {
@@ -363,7 +414,6 @@ new Vue({
   mounted() {
     this.getHashId();
     this.initCoinData();
-    this.initCoincapStream();
   },
 
 });
