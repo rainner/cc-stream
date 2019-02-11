@@ -181,15 +181,15 @@
               Waiting for exchanges data...
             </div>
 
-            <div v-for="e of exchangesList" class="common-item flex-row flex-middle flex-stretch" :key="e.exchange_id">
+            <div v-for="e of exchangesList" class="common-item flex-row flex-middle flex-stretch" :key="e.id">
               <div class="flex-1">
-                <span>{{ e.exchange_name }}</span>
+                <span>{{ e.name }}</span>
               </div>
               <div class="flex-1 text-right">
                 <fancynumber class="text-nowrap" :number="e.total_volume" :type="'money'"></fancynumber>
               </div>
               <div class="flex-1 text-right">
-                <fancynumber class="text-nowrap" :number="e.total_share" :type="'percent'" :decimals="8"></fancynumber>
+                <fancynumber class="text-nowrap" :number="e.adjusted_volume_24h_share" :type="'percent'" :decimals="8"></fancynumber>
               </div>
             </div>
 

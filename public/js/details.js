@@ -98,7 +98,7 @@ new Vue({
       // apply search
       if ( this.exchangesSearch.length > 1 ) {
         const regxp = new RegExp( '^('+ this.exchangesSearch +')', 'i' );
-        list = list.filter( e => regxp.test( e.exchange_name ) );
+        list = list.filter( e => regxp.test( e.name ) );
       }
       // calculate pagination
       let total = list.length;
@@ -229,6 +229,8 @@ new Vue({
 
         this.coin.setData( { id, uniq, name, symbol, quote } );
         this.coin.updateTicker( { rank, price, ath_price, circulating_supply, max_supply, volume_24h, market_cap, percent_change_1h, percent_change_24h, percent_change_7d, percent_change_30d, percent_change_1y } );
+
+        this.fetchExchanges();
         this.initCoincapStream();
 
       }).catch( err => {
@@ -303,6 +305,42 @@ new Vue({
     },
 
     /**
+     * Fetch exchanges data
+     */
+    fetchExchanges() {
+      const request = {
+        method: 'GET',
+        url: `https://api.coinpaprika.com/v1/coins/${ this.coinid }/exchanges`,
+        responseType: 'json',
+      }
+
+      axios( request ).then( res => {
+        if ( !Array.isArray( res.data ) ) return;
+
+        let coin_volume = this.coin.volume_24h;
+        let exchanges = {};
+
+        for ( let e of res.data ) {
+          // api data
+          let { id, name, adjusted_volume_24h_share } = e;
+          let total_volume = ( adjusted_volume_24h_share * coin_volume );
+
+          // skip some exchanges
+          if ( total_volume < this.marketsMinVol ) continue;
+
+          // build exchange data
+          exchanges[ id ] = { id, name, adjusted_volume_24h_share, total_volume };
+        }
+        // set data
+        // console.log( exchanges );
+        this.exchangesData = exchanges;
+
+      }).catch( err => {
+        console.warn( err );
+      });
+    },
+
+    /**
      * Fetch markets data
      */
     fetchMarkets() {
@@ -318,7 +356,6 @@ new Vue({
 
         let list = res.data;
         let count = list.length;
-        let exchanges = {};
         let markets = {};
         let combined_volumes = 0;
 
@@ -332,16 +369,6 @@ new Vue({
           if ( coin_symbol !== this.coin.symbol ) continue;
           if ( volume_24h < this.marketsMinVol ) continue;
           if ( this.marketsBlacklist.indexOf( exchange_id ) >= 0 ) continue;
-
-          // init exchange data
-          if ( !exchanges[ exchange_id ] ) {
-            exchanges[ exchange_id ] = {
-              exchange_id,
-              exchange_name,
-              total_volume: 0,
-              total_share: 0,
-            };
-          }
 
           // init market group data
           if ( !markets[ pair ] ) {
@@ -367,7 +394,6 @@ new Vue({
 
           // build group data
           combined_volumes += volume_24h;
-          exchanges[ exchange_id ].total_volume += volume_24h;
           markets[ pair ].total_volume += volume_24h;
           markets[ pair ].exchanges[ exchange_id ] = {
             pair,
@@ -391,16 +417,8 @@ new Vue({
           markets[ pair ].exchanges = exchanges;
         }
 
-        // calculate exchange shares
-        for ( let eid in exchanges ) {
-          let { total_volume } = exchanges[ eid ];
-          exchanges[ eid ].total_share = ( total_volume / combined_volumes );
-        }
-
         // set data
         // console.log( markets );
-        // console.log( exchanges );
-        this.exchangesData = exchanges;
         this.marketsData = markets;
 
        }).catch( err => {
