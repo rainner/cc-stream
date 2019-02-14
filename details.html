@@ -52,6 +52,19 @@
 
           </div>
 
+          <div class="coin-chart-wrap" :class="{ 'busy': chartBusy }">
+            <div class="coin-chart" ref="chartPrice"></div>
+            <div class="coin-chart" ref="chartVolume"></div>
+          </div>
+
+          <div class="coin-chart-btns text-center">
+            <button class="text-btn" :class="{ 'active': chartTime === 86400 }" @click="fetchCharts( 86400, '5m' )">24 Hours</button>
+            <button class="text-btn" :class="{ 'active': chartTime === 604800 }" @click="fetchCharts( 604800, '15m' )">7 Days</button>
+            <button class="text-btn" :class="{ 'active': chartTime === 2592000 }" @click="fetchCharts( 2592000, '1h' )">30 days</button>
+            <button class="text-btn" :class="{ 'active': chartTime === 31536000 }" @click="fetchCharts( 31536000, '12h' )">1 Year</button>
+            <button class="text-btn" :class="{ 'active': chartTime === 157680000 }" @click="fetchCharts( 157680000, '7d' )">5 Years</button>
+          </div>
+
         </section>
 
         <!-- page section -->
@@ -288,12 +301,24 @@
 
         </section>
 
+        <!-- page section -->
+        <section class="card push-bottom">
+          <h1>{{ coin.name }} Live Trades</h1>
+          <hr />
+
+          <div class="text-loader">
+            Waiting for api data...
+          </div>
+
+        </section>
+
       </div> <!-- wrapper -->
     </div> <!-- app -->
 
     <!-- external scripts -->
     <script src="//cdnjs.cloudflare.com/ajax/libs/Swiper/4.0.7/js/swiper.min.js"></script>
     <script src="//cdn.jsdelivr.net/npm/vue-awesome-swiper@3.1.2/dist/vue-awesome-swiper.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/apexcharts/2.2.4/apexcharts.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/gsap/2.0.2/TweenMax.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/axios/0.18.0/axios.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/vue/2.5.21/vue.min.js"></script>

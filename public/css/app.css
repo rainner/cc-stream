@@ -466,3 +466,14 @@ fancynumber {
   background-color: brown;
   color: antiquewhite;
 }
+
+/**
+  * Chart and buttons
+  */
+.coin-chart-wrap.busy,
+.coin-chart-btns > button.active {
+  pointer-events: none;
+  opacity: .6;
+}
+
+

@@ -25,6 +25,15 @@ new Vue({
       }
     },
 
+    // chart data
+    chartData: [],
+    chartTime: 86400,
+    chartInterval: '5m',
+    chartLimit: 1000,
+    chartPrice: null,
+    chartVolume: null,
+    chartBusy: false,
+
     // historical api data
     historyData: [],
     historyStart: 0,
@@ -161,6 +170,7 @@ new Vue({
      */
     initCoinData() {
       this.fetchCoin();
+      this.fetchCharts();
       this.fetchEvents();
       this.fetchHistory();
       this.fetchMarkets();
@@ -207,6 +217,104 @@ new Vue({
 
       if ( full ) return fulldate +' - '+ fulltime;
       return fulldate;
+    },
+
+    /**
+     * Create and setup chart instances
+     */
+    initApexCharts() {
+
+      // build top price chart
+      if ( this.$refs.chartPrice ) {
+        let id         = 'chartPrice';
+        let type       = 'area';
+        let height     = 250;
+        let toolbar    = { show: false };
+        let chart      = { id, type, height, toolbar };
+        let colors     = [ '#546E7A' ];
+        let stroke     = { width: 3 };
+        let fill       = { opacity: 1 };
+        let dataLabels = { enabled: false };
+        let markers    = { size: 0 };
+        let xaxis      = { type: 'datetime' };
+        let yaxis      = { tickAmount: 4 };
+        let series     = [ { name: 'Price', data: [] } ];
+
+        this.chartPrice = new ApexCharts( this.$refs.chartPrice, { chart, colors, stroke, fill, dataLabels, markers, xaxis, yaxis, series } );
+        this.chartPrice.render();
+      }
+
+      // build bottom volume chart
+      if ( this.$refs.chartVolume ) {
+        let id         = 'chartVolume';
+        let type       = 'area';
+        let height     = 150;
+        let brush      = { target: 'chartPrice', enabled: true };
+        let selection  = { enabled: true, stroke: { width: 0 } };
+        let chart      = { id, type, height, brush, selection };
+        let colors     = [ '#546E7A' ];
+        let fill       = { type: 'gradient', gradient: { opacityFrom: 0.91, opacityTo: 0.1 } };
+        let xaxis      = { type: 'datetime', tooltip: { enabled: false } };
+        let yaxis      = { tickAmount: 3 };
+        let series     = [ { name: 'Volume', data: [] } ];
+
+        this.chartVolume = new ApexCharts( this.$refs.chartVolume, { chart, colors, fill, xaxis, yaxis, series } );
+        this.chartVolume.render();
+      }
+    },
+
+    /**
+     * Updates the apexcharts options
+     */
+    updateChart( selection ) {
+      if ( !this.chartPrice || !this.chartVolume ) return;
+      if ( !this.chartData.length ) return;
+      let prices  = [];
+      let volumes = [];
+
+      // chart values come straight from api based on options above
+      for ( let e of this.chartData ) {
+        let x  = new Date( e.timestamp ).getTime();
+        let py = Number( e.price );
+        let vy = Number( e.volume_24h );
+        prices.push( [ x, py ] );
+        volumes.push( [ x, vy ] );
+      }
+      // update apex charts
+      this.chartPrice.updateSeries( [ { data: prices } ] );
+      this.chartVolume.updateSeries( [ { data: volumes } ] );
+      this.chartVolume.updateOptions( { chart: { selection } } );
+    },
+
+    /**
+     * Fetch chart data from api
+     */
+    fetchCharts( time, interval, limit ) {
+      this.chartTime     = parseInt( time ) || 2592000;
+      this.chartInterval = String( interval || '1h' );
+      this.chartLimit    = parseInt( limit ) || 1000;
+      this.chartBusy     = true;
+
+      const now          = Date.now();
+      const start        = Math.ceil( now / 1000 ) - this.chartTime;
+      const selection    = { xaxis: { min: start * 1000, max: now } };
+      const query        = this.$utils.queryStr( { start, interval: this.chartInterval, limit: this.chartLimit } );
+      const request      = {
+        method: 'GET',
+        url: `https://api.coinpaprika.com/v1/tickers/${ this.coinid }/historical?${ query }`,
+        responseType: 'json',
+      }
+
+      axios( request ).then( res => {
+        // update chart data and charts
+        this.chartBusy = false;
+        this.chartData = res.data;
+        this.updateChart( selection );
+
+       }).catch( err => {
+        this.chartBusy = false;
+        console.warn( err );
+      });
     },
 
     /**
@@ -431,6 +539,7 @@ new Vue({
   // app maunted
   mounted() {
     this.getHashId();
+    this.initApexCharts();
     this.initCoinData();
   },
 
