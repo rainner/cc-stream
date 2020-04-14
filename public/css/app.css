@@ -71,7 +71,7 @@ hr {
   margin: 1em 0;
   height: 0;
   border: 0;
-  border-bottom: 2px solid rgba( 0,0,0, 0.1 );
+  border-bottom: 2px solid rgba( 0, 0, 0, 0.1 );
 }
 
 fancynumber {
@@ -122,6 +122,9 @@ fancynumber {
 }
 .flex-around {
   justify-content: space-around;
+}
+.flex-stretch {
+  justify-content: stretch;
 }
 .flex-top {
   align-items: flex-start;
@@ -289,7 +292,7 @@ fancynumber {
 .form-input {
   line-height: 1em;
   padding: .4em 1em;
-  background-color: rgba( 0,0,0, 0.05 );
+  background-color: rgba( 0, 0, 0, 0.05 );
   border-radius: 100px;
 }
 
@@ -401,13 +404,13 @@ fancynumber {
 .markets-list > .markets-list-group {
   margin: .5em 0 0 0;
   border-radius: 5px;
-  background-color: rgba( 0,0,0, 0.03 );
+  background-color: rgba( 0, 0, 0, 0.03 );
 }
 .markets-list > .markets-list-group:hover {
-  background-color: rgba( 0,0,0, 0.06 );
+  background-color: rgba( 0, 0, 0, 0.06 );
 }
 .markets-list > .markets-list-group.active {
-  background-color: rgba( 0,0,0, 0.08 );
+  background-color: rgba( 0, 0, 0, 0.08 );
 }
 .markets-list > .markets-list-group > .markets-list-item {
   padding: .5em;
@@ -426,6 +429,48 @@ fancynumber {
 }
 
 /**
+  * News feed list
+  */
+.feed-wrap > .feed-header > .feed-tabs > button {
+  display: inline-block;
+  margin: 0 0 0 1rem;
+  padding: 0 .6rem 2px .6rem;
+  border-radius: 100px;
+  cursor: pointer;
+}
+.feed-wrap > .feed-header > .feed-tabs > button.active {
+  background-color: brown;
+  color: antiquewhite;
+}
+.feed-wrap > .feed-list > .feed-item-row {
+  padding: 1rem;
+}
+.feed-wrap > .feed-list > .feed-item-row {
+  background-color: rgba( 0, 0, 0, 0 );
+  cursor: pointer;
+}
+.feed-wrap > .feed-list > .feed-item-row:hover {
+  background-color: rgba( 0, 0, 0, .02 );
+}
+.feed-wrap > .feed-list > .feed-item-row + .feed-item-row {
+  border-top: 1px solid rgba( 0, 0, 0, .1 );
+}
+.feed-wrap > .feed-list .feed-item-icon > span {
+  display: inline-block;
+  text-align: center;
+  width: 48px;
+  height: 48px;
+  line-height: 46px;
+  vertical-align: middle;
+  border: 1px solid rgba( 0, 0, 0, .1 );
+  border-radius: 100px;
+}
+.feed-wrap > .feed-list .feed-item-date {
+  font-size: 80%;
+  color: rgba( 0, 0, 0, .5 );
+}
+
+/**
   * Common list
   */
 .common-list {
@@ -436,7 +481,7 @@ fancynumber {
   border-radius: 5px;
 }
 .common-list > .common-item:nth-child( even ) {
-  background-color: rgba( 0,0,0, 0.03 );
+  background-color: rgba( 0, 0, 0, 0.03 );
 }
 
 /**
@@ -455,12 +500,12 @@ fancynumber {
   line-height: 1em;
   min-width: 2em;
   text-align: center;
-  background-color: rgba( 0,0,0, 0.05 );
+  background-color: rgba( 0, 0, 0, 0.05 );
   border-radius: 100px;
   cursor: pointer;
 }
 .pagination > button:hover {
-  background-color: rgba( 0,0,0, 0.1 );
+  background-color: rgba( 0, 0, 0, 0.1 );
 }
 .pagination > button.active {
   background-color: brown;
