@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+
+    <title>Coin Feeds</title>
+
+    <meta charset="UTF-8" />
+    <meta http-equiv="x-ua-compatible" content="IE=Edge, chrome=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <meta name="description" id="description" content="My awesome web app." />
+
+    <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Boogaloo" />
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/css/all.min.css" />
+    <link rel="stylesheet" href="public/css/app.css" />
+
+  </head>
+  <body>
+
+    <!-- main wrappers -->
+    <div id="app">
+      <div id="wrapper">
+
+        <!-- news feed section -->
+        <section class="feed-wrap card push-bottom" id="news-feed">
+
+          <div class="feed-header flex-row flex-middle">
+            <div class="push-right">
+              <h1>Feeds</h1>
+            </div>
+            <div class="feed-tabs flex-row flex-middle">
+              <button v-for="t of tabs" type="button" class="clickable" :class="{ 'active': t.type === tab }" @click="switchTab( t.type )">
+                {{t.name}}
+              </button>
+            </div>
+          </div>
+
+          <hr />
+
+          <div class="text-loader" v-if="!feedsList.length">
+            <span v-if="!entries.length">Waiting for feeds data...</span>
+            <span v-else-if="errors.length">There are feed errors, check the console!</span>
+            <span v-else>This feed has no entries.</span>
+          </div>
+
+          <div class="feed-list">
+            <div class="feed-item-row flex-row flex-stretch" v-for="e of feedsList" :key="e.uniq" tabindex="0" role="button" @click="openUrl( e.link )">
+              <div class="feed-item-icon push-right">
+                <span :class="feedIcon( e.type )"></span>
+              </div>
+              <div class="feed-item-content">
+                <span class="feed-item-date text-uppercase">{{e.type}} - {{e.datestr}}</span> <br />
+                <span class="feed-item-title" target="_blank">{{e.title}}</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </div>
+
+    <!-- external scripts -->
+    <script src="//cdnjs.cloudflare.com/ajax/libs/axios/0.18.0/axios.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/vue/2.5.21/vue.min.js"></script>
+
+    <!-- app scripts -->
+    <script src="public/js/utils.js"></script>
+    <script src="public/js/feeds.js"></script>
+
+  </body>
+</html>
