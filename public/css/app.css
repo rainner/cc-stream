@@ -74,10 +74,6 @@ hr {
   border-bottom: 2px solid rgba( 0, 0, 0, 0.1 );
 }
 
-fancynumber {
-
-}
-
 .bgtest {
   background-color: rgba( 0, 0, 0, 0.1 );
 }
@@ -294,6 +290,25 @@ fancynumber {
   padding: .4em 1em;
   background-color: rgba( 0, 0, 0, 0.05 );
   border-radius: 100px;
+}
+
+/**
+  * New bubble indicator
+  */
+.new-bubble {
+  position: relative;
+}
+.new-bubble:after {
+  display: block;
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 16px;
+  height: 16px;
+  background-color: firebrick;
+  box-shadow: 0 1px 3px rgba( 0, 0, 0, .4 );
+  border-radius: 100px;
+  content: '';
 }
 
 /**

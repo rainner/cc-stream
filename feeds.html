@@ -28,8 +28,8 @@
               <h1>Feeds</h1>
             </div>
             <div class="feed-tabs flex-row flex-middle">
-              <button v-for="t of tabs" type="button" class="clickable" :class="{ 'active': t.type === tab }" @click="switchTab( t.type )">
-                {{t.name}}
+              <button v-for="t of tabsList" type="button" class="clickable" :class="{ 'active': t.type === tab }" @click="switchTab( t.type )">
+                {{t.name}} <span v-if="t.newcount">({{t.newcount}})</span>
               </button>
             </div>
           </div>
@@ -44,10 +44,10 @@
 
           <div class="feed-list">
             <div class="feed-item-row flex-row flex-stretch" v-for="e of feedsList" :key="e.uniq" tabindex="0" role="button" @click="openUrl( e.link )">
-              <div class="feed-item-icon push-right">
+              <div class="feed-item-icon push-right" :class="{ 'new-bubble': e.isnew }">
                 <span :class="feedIcon( e.type )"></span>
               </div>
-              <div class="feed-item-content">
+              <div class="feed-item-content flex-1">
                 <span class="feed-item-date text-uppercase">{{e.type}} - {{e.datestr}}</span> <br />
                 <span class="feed-item-title" target="_blank">{{e.title}}</span>
               </div>

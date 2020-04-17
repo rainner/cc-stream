@@ -4,8 +4,8 @@
 var blog_feed = 'https://blog.kraken.com/post/category/kraken-news/feed/';
 var news_rss = 'https://cointelegraph.com/rss';
 // var twitter_handle = '';
-var medium_handle = 'coindesk';
-var reddit_sub = 'CoinBase';
+// var medium_handle = 'coindesk';
+var reddit_sub = 'CryptoMarkets';
 // var youtube_channel = '';
 
 /**
@@ -16,16 +16,36 @@ new Vue({
 
   // app data
   data: {
+    // tabs
     tab: 'all',
     tabs: [],
+    // entries
     entries: [],
     errors: [],
     search: '',
+    limit: 10,
+    // cors proxy
+    // proxy: 'http://localhost:8080/',
     proxy: 'https://cors-anywhere.herokuapp.com/',
+    // time stuff
+    time_fetch: ( 60 * 5 ), // refetch on a timer (seconds)
+    time_new: ( 60 * 60 ), // time to show entries as new (seconds)
+    time_init: 0, // user initial timestamp (seconds)
+    time_sto: null,
   },
 
   // computed methods
   computed: {
+
+    // tabs list with new counts
+    tabsList() {
+      let list = this.tabs.slice();
+
+      list.forEach( tab => {
+        tab.newcount = this.entries.filter( e => ( e.type === tab.type && e.isnew ) ).length;
+      });
+      return list;
+    },
 
     // filter feeds list
     feedsList() {
@@ -49,28 +69,95 @@ new Vue({
   // custom methods
   methods: {
 
-    // switch to new tab
+    // store initial user timestamp
+    updateUserTime() {
+      const date = new Date();
+      this.time_init = ( date.getTime() / 1000 );
+    },
+
+    // setup tabs and feed urls
+    setupTabs() {
+      this.addTab( 'all', 'All', '' );
+
+      if ( window.blog_feed ) {
+        this.addTab( 'blog', 'Posts', blog_feed );
+      }
+      if ( window.news_rss ) {
+        this.addTab( 'news', 'News', news_rss );
+      }
+      if ( window.twitter_handle ) {
+        this.addTab( 'twitter', 'Twitter', 'https://twitter.com/' + twitter_handle );
+      }
+      if ( window.reddit_sub ) {
+        this.addTab( 'reddit', 'Reddit', 'https://www.reddit.com/r/' + reddit_sub + '.rss' );
+      }
+      if ( window.medium_handle ) {
+        this.addTab( 'medium', 'Medium', 'https://medium.com/feed/@' + medium_handle );
+      }
+      if ( window.youtube_channel ) {
+        this.addTab( 'youtube', 'Youtube', 'https://youtube.com/' + youtube_channel );
+      }
+    },
+
+    // switch to new tab and clear new entries after a few seconds
     switchTab( type ) {
+      if ( this.time_sto ) clearTimeout( this.time_sto );
+      this.time_sto = setTimeout( () => this.resetEntries( type ), 3000 );
       this.tab = type;
     },
 
     // add new feeds tab
-    addTab( type, name ) {
+    addTab( type, name, url ) {
       if ( !type || !name ) return;
-      this.tabs.push( { type, name } );
+      this.tabs.push( { type, name, url } );
     },
 
     // add new feed entry to the list
     addEntry( data ) {
-      if ( data === null || typeof data !== 'object' || !data.title ) return;
-      const _d = ( typeof data.date === 'string' ) ? new Date( data.date ) : Date.now();
+      if ( typeof data !== 'object' || !data.title || !data.link ) return;
+
+      // check if entry already exists
+      const uniq   = this.$utils.uniq( data.title );
+      const exists = this.entries.filter( e => ( e.uniq === uniq ) ).length;
+      if ( exists ) return;
+
+      // build and parse entry date info
+      const _n = Date.now();
+      const _d = new Date( data.date || _n );
       const _p = this.$utils.parseTime( _d );
-      const timestamp = _d.getTime(); // timestamp used to sort by latest
-      const datestr   = [ _p.day, _p.month, _p.year ].join( ' ' ); // custom date format
-      const uniq      = this.$utils.uniq( data.title ); // uniq slug based off title
-      const type      = String( data.type || '' ) || 'all'; // type of feed (twitter, blog, news, etc)
-      const proto     = { timestamp, datestr, uniq, type, title: '', link: '' }; // every entry should contain these
-      this.entries.push( Object.assign( proto, data ) ); // add to list
+
+      // logic to detect if an entry is new
+      const timestamp = ( _d.getTime() / 1000 ); // entry timestamp (seconds)
+      const elapsed   = ( _n / 1000 ) - timestamp; // age of entry (seconds)
+      const isnew     = ( timestamp > this.time_init && elapsed < this.time_new );
+      const datestr   = [ _p.day, _p.month, _p.year ].join( ' ' );
+
+      // add new entry to list
+      const e = { uniq, timestamp, elapsed, datestr, isnew, type: '', title: '', link: '' };
+      this.entries.push( Object.assign( e, data ) );
+    },
+
+    // turn off new flag on entries
+    resetEntries( type ) {
+      this.entries.forEach( e => {
+        if ( type && e.type !== type ) return;
+        e.isnew = false;
+      });
+    },
+
+    // trim number of entries for all types
+    trimEntries() {
+      if ( !this.limit ) return;
+      let tpm = [];
+      let lst = [];
+
+      for ( let tab of this.tabs ) {
+        lst = this.entries.filter( e => ( e.type === tab.type ) ); // filter by type
+        lst = this.$utils.sort( lst, 'timestamp', 'desc' ); // sort by timestamp
+        if ( lst.length > this.limit ) lst = lst.slice( 0, this.limit ); // remove old entries
+        lst.forEach( e => { tpm.push( e ) }); // add to new list
+      }
+      this.entries = tpm;
     },
 
     // resolve a icon for a feed based off type
@@ -91,28 +178,14 @@ new Vue({
       window.open( link, '_blank' );
     },
 
-    // method for fetching and parsing remote rss feed
-    // support for both atom and rss formats
+    // parse rss string data from response (atom/rss)
     // https://en.wikipedia.org/wiki/Atom_(Web_standard)
     // https://en.wikipedia.org/wiki/RSS
-    fetchRss( type, url ) {
-      axios( { method: 'GET', responseType: 'text', url: this.proxy + url } ).then( res => {
-
-        // request error
-        if ( !res || !res.status || !res.data ) {
-          return this.handleError( type, url, `Could not send the request` );
-        }
-
-        // response error
-        if ( res.status >= 400 ) {
-          return this.handleError( type, url, `Server responded with status code ${res.status}` );
-        }
-
-        // try to parse response
-        const _parser   = new DOMParser();
-        const _dom      = _parser.parseFromString( res.data, 'text/xml' );
-        const _items    = _dom.querySelectorAll( 'item' ); // rss
-        const _entries  = _dom.querySelectorAll( 'entry' ); // atom
+    parseRss( type, url, data ) {
+        const _parser  = new DOMParser();
+        const _dom     = _parser.parseFromString( data || '', 'text/xml' );
+        const _items   = _dom.querySelectorAll( 'item' ); // rss
+        const _entries = _dom.querySelectorAll( 'entry' ); // atom
 
         // resolve final list
         let _list = [];
@@ -123,78 +196,55 @@ new Vue({
         if ( _dom.documentElement.nodeName === 'parsererror' ) {
           return this.handleError( type, url, `Could not parse the response` );
         }
-
         // empty feed error
         if ( !_list.length ) {
           return this.handleError( type, url, `The feed has no items` );
         }
-
         // loop list items
         _list.forEach( el => {
-
           // look for entry title (atom/rss)
           let title = el.querySelector( 'title' );
           title = title ? title.textContent : '';
-
           // look for entry link (atom/rss)
           let link = el.querySelector( 'link' );
           link = link ? link.getAttribute( 'href' ) || link.textContent : '';
-
           // look for entry pubDate (rss)
           let pubDate = el.querySelector( 'pubDate' );
           pubDate = pubDate ? pubDate.textContent : '';
-
           // look for entry updated (atom)
           let updated = el.querySelector( 'updated' );
           updated = updated ? updated.textContent : '';
-
-          // look for entry final date
-          let date = pubDate || updated || '';
-
           // add entry to list
-          if ( !title || !link ) return;
+          let date = pubDate || updated || '';
           this.addEntry( { type, title, link, date } );
         });
-
-      })
-      .catch( err => {
-        this.handleError( type, url, err.message || `The request has failed` );
-      });
+        // trim list
+        this.trimEntries();
     },
 
-    // setup tabs and feed urls
-    setupTabs() {
-      this.addTab( 'all', 'All' );
+    // fetch remote rss for all sources
+    fetchSources() {
+      this.errors = [];
 
-      if ( window.blog_feed ) {
-        const type = 'blog';
-        this.addTab( type, 'Posts' );
-        this.fetchRss( type, blog_feed );
+      // get feed info from tabs
+      for ( let tab of this.tabs ) {
+        const { type, url } = tab;
+        const request = { method: 'GET', responseType: 'text', url: this.proxy + url };
+        if ( !tab.url || typeof tab.url !== 'string' ) continue;
+
+        // make request
+        axios( request ).then( res => {
+          if ( !res || !res.status || !res.data ) return this.handleError( type, url, `Could not send the request` );
+          if ( res.status >= 400 ) return this.handleError( type, url, `Server responded with status ${res.status}` );
+          this.parseRss( type, url, res.data );
+        })
+        .catch( err => {
+          this.handleError( type, url, err.message || `The request has failed` );
+        });
       }
-      if ( window.news_rss ) {
-        const type = 'news';
-        this.addTab( type, 'News' );
-        this.fetchRss( type, news_rss );
-      }
-      if ( window.twitter_handle ) {
-        const type = 'twitter';
-        this.addTab( type, 'Twitter' );
-        this.fetchRss( type, 'https://twitter.com/' + twitter_handle );
-      }
-      if ( window.reddit_sub ) {
-        const type = 'reddit';
-        this.addTab( type, 'Reddit' );
-        this.fetchRss( type, 'https://www.reddit.com/r/' + reddit_sub + '.rss' );
-      }
-      if ( window.medium_handle ) {
-        const type = 'medium';
-        this.addTab( type, 'Medium' );
-        this.fetchRss( type, 'https://medium.com/feed/@' + medium_handle );
-      }
-      if ( window.youtube_channel ) {
-        const type = 'youtube';
-        this.addTab( type, 'Youtube' );
-        this.fetchRss( type, 'https://youtube.com/' + youtube_channel );
+      // setup auto re-fetch
+      if ( this.time_fetch >= 60 ) {
+        setTimeout( this.fetchSources, 1000 * this.time_fetch );
       }
     },
 
@@ -204,13 +254,13 @@ new Vue({
       this.errors.push( emsg );
       console.warn( emsg );
     },
-
   },
 
   // app maunted
   mounted() {
-    this.errors = [];
+    this.updateUserTime();
     this.setupTabs();
+    this.fetchSources();
   },
 
 });
