@@ -23,15 +23,14 @@ new Vue({
     entries: [],
     errors: [],
     search: '',
-    limit: 10,
+    limit: 20,
     // cors proxy
     // proxy: 'http://localhost:8080/',
     proxy: 'https://cors-anywhere.herokuapp.com/',
     // time stuff
-    time_fetch: ( 60 * 5 ), // refetch on a timer (seconds)
-    time_new: ( 60 * 60 ), // time to show entries as new (seconds)
+    time_fetch: 0, // refetch on a timer (seconds)
+    time_new: ( 60 * 60 * 24 ), // time to show entries as new (seconds)
     time_init: 0, // user initial timestamp (seconds)
-    time_sto: null,
   },
 
   // computed methods
@@ -39,10 +38,14 @@ new Vue({
 
     // tabs list with new counts
     tabsList() {
-      let list = this.tabs.slice();
+      let list  = this.tabs.slice();
 
       list.forEach( tab => {
-        tab.newcount = this.entries.filter( e => ( e.type === tab.type && e.isnew ) ).length;
+        if ( tab.type === 'all' ) {
+          tab.newcount = this.entries.filter( e => e.isnew ).length;
+        } else {
+          tab.newcount = this.entries.filter( e => ( e.type === tab.type && e.isnew ) ).length;
+        }
       });
       return list;
     },
@@ -101,8 +104,6 @@ new Vue({
 
     // switch to new tab and clear new entries after a few seconds
     switchTab( type ) {
-      if ( this.time_sto ) clearTimeout( this.time_sto );
-      this.time_sto = setTimeout( () => this.resetEntries( type ), 3000 );
       this.tab = type;
     },
 
@@ -258,7 +259,7 @@ new Vue({
 
   // app maunted
   mounted() {
-    this.updateUserTime();
+    // this.updateUserTime();
     this.setupTabs();
     this.fetchSources();
   },
