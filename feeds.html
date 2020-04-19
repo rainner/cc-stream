@@ -53,6 +53,13 @@
               </div>
             </div>
           </div>
+
+          <div v-if="hasMoreEntries">
+            <hr />
+            <button class="btn clickable" type="button" @click="showall = true">
+              <i class="fa fa-plus"></i>&nbsp; Show all entries
+            </button>
+          </div>
         </section>
 
       </div>
