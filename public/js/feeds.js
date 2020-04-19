@@ -3,10 +3,10 @@
  */
 var blog_feed = 'https://blog.kraken.com/post/category/kraken-news/feed/';
 var news_rss = 'https://cointelegraph.com/rss';
-// var twitter_handle = '';
-// var medium_handle = 'coindesk';
+var twitter_handle = 'coinbase';
 var reddit_sub = 'CryptoMarkets';
-// var youtube_channel = '';
+var youtube_channel = 'UCBcRF18a7Qf58cCRy5xuWwQ';
+// var medium_handle = 'coindesk';
 
 /**
  * Vue feeds app instance
@@ -19,16 +19,24 @@ new Vue({
     // tabs
     tab: 'all',
     tabs: [],
+
     // entries
     entries: [],
     errors: [],
     search: '',
+
+    // pagination
+    total: 0,
+    listed: 0,
     limit: 20,
+    showall: false,
+
     // cors proxy
     // proxy: 'http://localhost:8080/',
     proxy: 'https://cors-anywhere.herokuapp.com/',
+
     // time stuff
-    time_fetch: 0, // refetch on a timer (seconds)
+    time_fetch: ( 60 * 5 ), // refetch on a timer (seconds)
     time_new: ( 60 * 60 * 24 ), // time to show entries as new (seconds)
     time_init: 0, // user initial timestamp (seconds)
   },
@@ -65,12 +73,38 @@ new Vue({
       }
       // sort list based on timestamp
       list = this.$utils.sort( list, 'timestamp', 'desc' );
+      this.total  = list.length;
+      this.listed = list.length;
+
+      // trim list if needed
+      if ( !this.showall && this.limit && this.total > this.limit ) {
+        list = list.slice( 0, this.limit );
+        this.listed = list.length;
+      }
       return list;
+    },
+
+    // check if there are more entries to show
+    hasMoreEntries() {
+      return ( this.total > this.listed );
     },
   },
 
   // custom methods
   methods: {
+
+    // resolve a icon for a feed based off type
+    feedIcon( type ) {
+      switch ( type ) {
+        case 'blog':     return 'fa fa-align-left';
+        case 'news':     return 'fa fa-rss';
+        case 'twitter':  return 'fab fa-twitter';
+        case 'medium':   return 'fab fa-medium';
+        case 'reddit':   return 'fab fa-reddit';
+        case 'youtube':  return 'fab fa-youtube';
+        default:         return 'fa fa-link';
+      }
+    },
 
     // store initial user timestamp
     updateUserTime() {
@@ -89,21 +123,22 @@ new Vue({
         this.addTab( 'news', 'News', news_rss );
       }
       if ( window.twitter_handle ) {
-        this.addTab( 'twitter', 'Twitter', 'https://twitter.com/' + twitter_handle );
+        this.addTab( 'twitter', 'Twitter', 'https://coinrated.com/templates/cr/tweet/userjson.php?user=' + twitter_handle );
+      }
+      if ( window.youtube_channel ) {
+        this.addTab( 'youtube', 'Youtube', 'https://youtube.com/feeds/videos.xml?channel_id=' + youtube_channel );
       }
       if ( window.reddit_sub ) {
-        this.addTab( 'reddit', 'Reddit', 'https://www.reddit.com/r/' + reddit_sub + '.rss' );
+        this.addTab( 'reddit', 'Reddit', 'https://reddit.com/r/' + reddit_sub + '.rss' );
       }
       if ( window.medium_handle ) {
         this.addTab( 'medium', 'Medium', 'https://medium.com/feed/@' + medium_handle );
-      }
-      if ( window.youtube_channel ) {
-        this.addTab( 'youtube', 'Youtube', 'https://youtube.com/' + youtube_channel );
       }
     },
 
     // switch to new tab and clear new entries after a few seconds
     switchTab( type ) {
+      this.showall = false;
       this.tab = type;
     },
 
@@ -146,34 +181,6 @@ new Vue({
       });
     },
 
-    // trim number of entries for all types
-    trimEntries() {
-      if ( !this.limit ) return;
-      let tpm = [];
-      let lst = [];
-
-      for ( let tab of this.tabs ) {
-        lst = this.entries.filter( e => ( e.type === tab.type ) ); // filter by type
-        lst = this.$utils.sort( lst, 'timestamp', 'desc' ); // sort by timestamp
-        if ( lst.length > this.limit ) lst = lst.slice( 0, this.limit ); // remove old entries
-        lst.forEach( e => { tpm.push( e ) }); // add to new list
-      }
-      this.entries = tpm;
-    },
-
-    // resolve a icon for a feed based off type
-    feedIcon( type ) {
-      switch ( type ) {
-        case 'blog':     return 'fa fa-align-left';
-        case 'news':     return 'fa fa-rss';
-        case 'twitter':  return 'fab fa-twitter';
-        case 'medium':   return 'fab fa-medium';
-        case 'reddit':   return 'fab fa-reddit';
-        case 'youtube':  return 'fab fa-youtube';
-        default:         return 'fa fa-link';
-      }
-    },
-
     // helper to open a new page for a link
     openUrl( link ) {
       window.open( link, '_blank' );
@@ -183,44 +190,69 @@ new Vue({
     // https://en.wikipedia.org/wiki/Atom_(Web_standard)
     // https://en.wikipedia.org/wiki/RSS
     parseRss( type, url, data ) {
-        const _parser  = new DOMParser();
-        const _dom     = _parser.parseFromString( data || '', 'text/xml' );
-        const _items   = _dom.querySelectorAll( 'item' ); // rss
-        const _entries = _dom.querySelectorAll( 'entry' ); // atom
+      const _parser  = new DOMParser();
+      const _dom     = _parser.parseFromString( data || '', 'text/xml' );
+      const _items   = _dom.querySelectorAll( 'item' ); // rss
+      const _entries = _dom.querySelectorAll( 'entry' ); // atom
 
-        // resolve final list
-        let _list = [];
-        _list = _items.length   ? _items   : _list;
-        _list = _entries.length ? _entries : _list;
+      // resolve final list
+      let _list = [];
+      _list = _items.length   ? _items   : _list;
+      _list = _entries.length ? _entries : _list;
 
-        // parsing error
-        if ( _dom.documentElement.nodeName === 'parsererror' ) {
-          return this.handleError( type, url, `Could not parse the response` );
+      // parsing error
+      if ( _dom.documentElement.nodeName === 'parsererror' ) {
+        return this.handleError( type, url, `Could not parse the response` );
+      }
+      // empty feed error
+      if ( !_list.length ) {
+        return this.handleError( type, url, `The feed has no items` );
+      }
+      // loop list items
+      _list.forEach( el => {
+        // look for entry title (atom/rss)
+        let title = el.querySelector( 'title' );
+        title = title ? title.textContent : '';
+        // look for entry link (atom/rss)
+        let link = el.querySelector( 'link' );
+        link = link ? link.getAttribute( 'href' ) || link.textContent : '';
+        // look for entry pubDate (rss)
+        let pubDate = el.querySelector( 'pubDate' );
+        pubDate = pubDate ? pubDate.textContent : '';
+        // look for entry updated (atom)
+        let updated = el.querySelector( 'updated' );
+        updated = updated ? updated.textContent : '';
+        // add entry to list
+        let date = pubDate || updated || '';
+        this.addEntry( { type, title, link, date } );
+      });
+    },
+
+    // parse twitter json
+    // https://coinrated.com/templates/cr/tweet/userjson.php?user={handle}
+    parseTwitter( type, url, data ) {
+      let _list = ( Array.isArray( data ) ) ? data : [];
+
+      // parse json string response
+      if ( typeof data === 'string' ) {
+        try { _list = JSON.parse( data ); }
+        catch ( e ) {
+          return this.handleError( type, url, e.message || `Could not parse the response` );
         }
-        // empty feed error
-        if ( !_list.length ) {
-          return this.handleError( type, url, `The feed has no items` );
-        }
-        // loop list items
-        _list.forEach( el => {
-          // look for entry title (atom/rss)
-          let title = el.querySelector( 'title' );
-          title = title ? title.textContent : '';
-          // look for entry link (atom/rss)
-          let link = el.querySelector( 'link' );
-          link = link ? link.getAttribute( 'href' ) || link.textContent : '';
-          // look for entry pubDate (rss)
-          let pubDate = el.querySelector( 'pubDate' );
-          pubDate = pubDate ? pubDate.textContent : '';
-          // look for entry updated (atom)
-          let updated = el.querySelector( 'updated' );
-          updated = updated ? updated.textContent : '';
-          // add entry to list
-          let date = pubDate || updated || '';
-          this.addEntry( { type, title, link, date } );
-        });
-        // trim list
-        this.trimEntries();
+      }
+      // empty feed error
+      if ( !_list.length ) {
+        return this.handleError( type, url, `The feed has no items` );
+      }
+      // loop list items
+      _list.forEach( e => {
+        let id    = e.id_str || '';
+        let user  = e.user.name || '';
+        let title = e.full_text || '';
+        let link  = 'https://twitter.com/'+ user +'/status/'+ id;
+        let date  = e.created_at || '';
+        this.addEntry( { type, title, link, date } );
+      });
     },
 
     // fetch remote rss for all sources
@@ -237,7 +269,12 @@ new Vue({
         axios( request ).then( res => {
           if ( !res || !res.status || !res.data ) return this.handleError( type, url, `Could not send the request` );
           if ( res.status >= 400 ) return this.handleError( type, url, `Server responded with status ${res.status}` );
-          this.parseRss( type, url, res.data );
+
+          // different parsers based on type
+          switch ( type ) {
+            case 'twitter' : return this.parseTwitter( type, url, res.data );
+            default        : return this.parseRss( type, url, res.data );
+          }
         })
         .catch( err => {
           this.handleError( type, url, err.message || `The request has failed` );
@@ -246,6 +283,7 @@ new Vue({
       // setup auto re-fetch
       if ( this.time_fetch >= 60 ) {
         setTimeout( this.fetchSources, 1000 * this.time_fetch );
+        // this.updateUserTime(); // only show new entries since last page load
       }
     },
 
@@ -259,7 +297,6 @@ new Vue({
 
   // app maunted
   mounted() {
-    // this.updateUserTime();
     this.setupTabs();
     this.fetchSources();
   },
