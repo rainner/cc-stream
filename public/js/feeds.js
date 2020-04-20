@@ -1,12 +1,48 @@
 /**
- * Placeholders: these come from PHP
+ * Placeholder:
+ * list of tabs and related sources.
+ * simulated json string data passed from php.
  */
-var blog_feed = 'https://blog.kraken.com/post/category/kraken-news/feed/';
-var news_rss = 'https://cointelegraph.com/rss';
-var twitter_handle = 'coinbase';
-var reddit_sub = 'CryptoMarkets';
-var youtube_channel = 'UCBcRF18a7Qf58cCRy5xuWwQ';
-// var medium_handle = 'coindesk';
+var feeds_data = `[
+  {
+    "name": "All",
+    "icon": "",
+    "urls": []
+  },
+  {
+    "name": "News",
+    "icon": "fa fa-rss",
+    "urls": [ "https://cointelegraph.com/rss" ]
+  },
+  {
+    "name": "Blog",
+    "icon": "fa fa-align-left",
+    "urls": [ "https://blog.kraken.com/post/category/kraken-news/feed/" ]
+  },
+  {
+    "name": "Reddit",
+    "icon": "fab fa-reddit",
+    "urls": [ "https://reddit.com/r/CryptoMarkets.rss" ]
+  },
+  {
+    "name": "Youtube",
+    "icon": "fab fa-youtube",
+    "urls": [ "https://youtube.com/feeds/videos.xml?channel_id=UCBcRF18a7Qf58cCRy5xuWwQ" ]
+  },
+  {
+    "name": "Twitter",
+    "icon": "fab fa-twitter",
+    "urls": [ "https://coinrated.com/templates/cr/tweet/userjson.php?user=Coinbase" ]
+  },
+  {
+    "name": "Github",
+    "icon": "fab fa-github",
+    "urls": [
+      "https://github.com/bitcoin/bitcoin/commits.atom",
+      "https://github.com/bitcoin/bitcoin/releases.atom"
+    ]
+  }
+]`;
 
 /**
  * Vue feeds app instance
@@ -28,7 +64,7 @@ new Vue({
     // pagination
     total: 0,
     listed: 0,
-    limit: 20,
+    limit: 30,
     showall: false,
 
     // cors proxy
@@ -93,19 +129,6 @@ new Vue({
   // custom methods
   methods: {
 
-    // resolve a icon for a feed based off type
-    feedIcon( type ) {
-      switch ( type ) {
-        case 'blog':     return 'fa fa-align-left';
-        case 'news':     return 'fa fa-rss';
-        case 'twitter':  return 'fab fa-twitter';
-        case 'medium':   return 'fab fa-medium';
-        case 'reddit':   return 'fab fa-reddit';
-        case 'youtube':  return 'fab fa-youtube';
-        default:         return 'fa fa-link';
-      }
-    },
-
     // store initial user timestamp
     updateUserTime() {
       const date = new Date();
@@ -114,25 +137,13 @@ new Vue({
 
     // setup tabs and feed urls
     setupTabs() {
-      this.addTab( 'all', 'All', '' );
-
-      if ( window.blog_feed ) {
-        this.addTab( 'blog', 'Posts', blog_feed );
+      if ( !window.feeds_data ) return;
+      try {
+        const tabs = JSON.parse( window.feeds_data );
+        for ( let tab of tabs ) this.addTab( tab );
       }
-      if ( window.news_rss ) {
-        this.addTab( 'news', 'News', news_rss );
-      }
-      if ( window.twitter_handle ) {
-        this.addTab( 'twitter', 'Twitter', 'https://coinrated.com/templates/cr/tweet/userjson.php?user=' + twitter_handle );
-      }
-      if ( window.youtube_channel ) {
-        this.addTab( 'youtube', 'Youtube', 'https://youtube.com/feeds/videos.xml?channel_id=' + youtube_channel );
-      }
-      if ( window.reddit_sub ) {
-        this.addTab( 'reddit', 'Reddit', 'https://reddit.com/r/' + reddit_sub + '.rss' );
-      }
-      if ( window.medium_handle ) {
-        this.addTab( 'medium', 'Medium', 'https://medium.com/feed/@' + medium_handle );
+      catch ( e ) {
+        console.warn( 'setupTabsJsonError:', e.message || 'Could not parse JSON string from server.' );
       }
     },
 
@@ -143,9 +154,19 @@ new Vue({
     },
 
     // add new feeds tab
-    addTab( type, name, url ) {
-      if ( !type || !name ) return;
-      this.tabs.push( { type, name, url } );
+    addTab( data ) {
+      if ( typeof data !== 'object' || !data.name || !data.urls ) return;
+      if ( !Array.isArray( data.urls ) ) return;
+
+      // common tab properties
+      const type = this.$utils.uniq( data.name );
+      const name = 'Tab';
+      const icon = 'fa fa-rss';
+      const urls = [];
+
+      // add new tab to list
+      const e = { type, name, icon, urls };
+      this.tabs.push( Object.assign( e, data ) );
     },
 
     // add new feed entry to the list
@@ -168,8 +189,14 @@ new Vue({
       const isnew     = ( timestamp > this.time_init && elapsed < this.time_new );
       const datestr   = [ _p.day, _p.month, _p.year ].join( ' ' );
 
+      // other common entry properties
+      const type  = 'all';
+      const icon  = 'fa fa-rss';
+      const title = 'Empty title';
+      const link = '';
+
       // add new entry to list
-      const e = { uniq, timestamp, elapsed, datestr, isnew, type: '', title: '', link: '' };
+      const e = { uniq, timestamp, elapsed, datestr, isnew, type, icon, title, link };
       this.entries.push( Object.assign( e, data ) );
     },
 
@@ -189,7 +216,7 @@ new Vue({
     // parse rss string data from response (atom/rss)
     // https://en.wikipedia.org/wiki/Atom_(Web_standard)
     // https://en.wikipedia.org/wiki/RSS
-    parseRss( type, url, data ) {
+    parseRss( tab, data ) {
       const _parser  = new DOMParser();
       const _dom     = _parser.parseFromString( data || '', 'text/xml' );
       const _items   = _dom.querySelectorAll( 'item' ); // rss
@@ -202,11 +229,11 @@ new Vue({
 
       // parsing error
       if ( _dom.documentElement.nodeName === 'parsererror' ) {
-        return this.handleError( type, url, `Could not parse the response` );
+        return this.handleError( tab, `Could not parse the response` );
       }
       // empty feed error
       if ( !_list.length ) {
-        return this.handleError( type, url, `The feed has no items` );
+        return this.handleError( tab, `The feed has no items` );
       }
       // loop list items
       _list.forEach( el => {
@@ -224,25 +251,23 @@ new Vue({
         updated = updated ? updated.textContent : '';
         // add entry to list
         let date = pubDate || updated || '';
-        this.addEntry( { type, title, link, date } );
+        this.addEntry( Object.assign( { title, link, date }, tab ) );
       });
     },
 
     // parse twitter json
     // https://coinrated.com/templates/cr/tweet/userjson.php?user={handle}
-    parseTwitter( type, url, data ) {
+    parseTwitter( tab, data ) {
       let _list = ( Array.isArray( data ) ) ? data : [];
 
       // parse json string response
       if ( typeof data === 'string' ) {
         try { _list = JSON.parse( data ); }
-        catch ( e ) {
-          return this.handleError( type, url, e.message || `Could not parse the response` );
-        }
+        catch ( e ) { return this.handleError( tab, e.message || `Could not parse the response` ); }
       }
       // empty feed error
       if ( !_list.length ) {
-        return this.handleError( type, url, `The feed has no items` );
+        return this.handleError( tab, `The feed has no items` );
       }
       // loop list items
       _list.forEach( e => {
@@ -251,34 +276,33 @@ new Vue({
         let title = e.full_text || '';
         let link  = 'https://twitter.com/'+ user +'/status/'+ id;
         let date  = e.created_at || '';
-        this.addEntry( { type, title, link, date } );
+        this.addEntry( Object.assign( { title, link, date }, tab ) );
       });
     },
 
     // fetch remote rss for all sources
     fetchSources() {
       this.errors = [];
-
-      // get feed info from tabs
+      // loop tabs
       for ( let tab of this.tabs ) {
-        const { type, url } = tab;
-        const request = { method: 'GET', responseType: 'text', url: this.proxy + url };
-        if ( !tab.url || typeof tab.url !== 'string' ) continue;
-
-        // make request
-        axios( request ).then( res => {
-          if ( !res || !res.status || !res.data ) return this.handleError( type, url, `Could not send the request` );
-          if ( res.status >= 400 ) return this.handleError( type, url, `Server responded with status ${res.status}` );
-
-          // different parsers based on type
-          switch ( type ) {
-            case 'twitter' : return this.parseTwitter( type, url, res.data );
-            default        : return this.parseRss( type, url, res.data );
-          }
-        })
-        .catch( err => {
-          this.handleError( type, url, err.message || `The request has failed` );
-        });
+        // loop urls or each tab
+        for ( let url of tab.urls ) {
+          // make request for each url this tab has
+          axios( { method: 'GET', url: `${this.proxy}${url}` } ).then( res => {
+            // check response
+            if ( !res || !res.status || !res.data ) return this.handleError( tab, `Could not send the request` );
+            if ( res.status >= 400 ) return this.handleError( tab, `Server responded with status ${res.status}` );
+            // different parsers based on type
+            switch ( tab.type ) {
+              case 'twitter' : return this.parseTwitter( tab, res.data );
+              default        : return this.parseRss( tab, res.data );
+            }
+          })
+          .catch( e => {
+            const error = e.message || `The request has failed`;
+            this.handleError( tab, error );
+          });
+        }
       }
       // setup auto re-fetch
       if ( this.time_fetch >= 60 ) {
@@ -288,10 +312,10 @@ new Vue({
     },
 
     // handle commone request errors
-    handleError( type, url, error ) {
-      const emsg = `${type}FeedError: ${error} (URL: ${url})`;
-      this.errors.push( emsg );
-      console.warn( emsg );
+    handleError( tab, error ) {
+      const msg = `${tab.type}Error: ${error}.`;
+      this.errors.push( msg );
+      console.warn( msg );
     },
   },
 
