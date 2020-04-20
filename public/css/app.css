@@ -449,11 +449,14 @@ hr {
 .feed-wrap > .feed-header > .feed-tabs > button {
   display: inline-block;
   margin: 0 0 0 1rem;
-  padding: 0 .6rem 2px .6rem;
+  padding: 0 .8rem;
+  line-height: 1.6em;
   border-radius: 100px;
+  background-color: rgba( 0, 0, 0, .03 );
   cursor: pointer;
 }
 .feed-wrap > .feed-header > .feed-tabs > button.active {
+  font-weight: normal;
   background-color: brown;
   color: antiquewhite;
 }
