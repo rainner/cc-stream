@@ -37,10 +37,12 @@ var feeds_data = `[
   {
     "name": "Github",
     "icon": "fab fa-github",
-    "urls": [
-      "https://github.com/bitcoin/bitcoin/commits.atom",
-      "https://github.com/bitcoin/bitcoin/releases.atom"
-    ]
+    "urls": [ "https://github.com/bitcoin/bitcoin/releases.atom" ]
+  },
+  {
+    "name": "Medium",
+    "icon": "fab fa-medium",
+    "urls": [ "https://medium.com/feed/@VitalikButerin" ]
   }
 ]`;
 
@@ -190,14 +192,17 @@ new Vue({
       const datestr   = [ _p.day, _p.month, _p.year ].join( ' ' );
 
       // other common entry properties
-      const type  = 'all';
-      const icon  = 'fa fa-rss';
-      const title = 'Empty title';
-      const link = '';
+      const type   = 'all';
+      const tag    = '';
+      const icon   = 'fa fa-rss';
+      const title  = 'Empty title';
+      const link   = '';
+      const author = '';
 
       // add new entry to list
-      const e = { uniq, timestamp, elapsed, datestr, isnew, type, icon, title, link };
-      this.entries.push( Object.assign( e, data ) );
+      const e = { uniq, timestamp, elapsed, datestr, isnew, type, tag, icon, title, link, author };
+      const entry = this.resolveEntryTag( Object.assign( e, data ) );
+      this.entries.push( entry );
     },
 
     // turn off new flag on entries
@@ -206,6 +211,37 @@ new Vue({
         if ( type && e.type !== type ) return;
         e.isnew = false;
       });
+    },
+
+    // resolve unique entry tag for specific entry types
+    resolveEntryTag( data ) {
+      const _r = new URL( data.link );
+      const pathname = String( _r.pathname || '' ).replace( /^\/+/, '' ).split( '/' ).shift();
+      const hostname = String( _r.hostname || '' );
+
+      // news/blog: use link hostname
+      if ( data.type === 'news' || data.type === 'blog' ) {
+        data.tag = hostname;
+      }
+      // twitter/medium: use pathname handle
+      if ( data.type === 'twitter' || data.type === 'medium' ) {
+        data.tag = `@${pathname}`;
+      }
+      // github: use path name as repo name
+      if ( data.type === 'github' ) {
+        data.title = `${pathname} - ${data.title}`;
+        data.tag = 'Release';
+      }
+      // reddit: use pathname without extension
+      if ( data.type === 'reddit' ) {
+        const _x = new URL( data.urls[0] );
+        data.tag = String( _x.pathname || '' ).replace( /(\.[\w\-]+)$/, '' );
+      }
+      // youtube: author name from feed entries
+      if ( data.type === 'youtube' ) {
+        data.tag = data.author;
+      }
+      return data;
     },
 
     // helper to open a new page for a link
@@ -249,9 +285,12 @@ new Vue({
         // look for entry updated (atom)
         let updated = el.querySelector( 'updated' );
         updated = updated ? updated.textContent : '';
+        // look for author updated (atom)
+        let author = el.querySelector( 'author > name' );
+        author = author ? author.textContent : '';
         // add entry to list
         let date = pubDate || updated || '';
-        this.addEntry( Object.assign( { title, link, date }, tab ) );
+        this.addEntry( Object.assign( { title, link, date, author }, tab ) );
       });
     },
 
