@@ -37,7 +37,7 @@ var feeds_data = `[
   {
     "name": "Github",
     "icon": "fab fa-github",
-    "urls": [ "https://github.com/bitcoin/bitcoin/releases.atom" ]
+    "urls": [ "https://github.com/Samourai-Wallet/samourai-wallet-android/releases.atom" ]
   },
   {
     "name": "Medium",
@@ -216,7 +216,8 @@ new Vue({
     // resolve unique entry tag for specific entry types
     resolveEntryTag( data ) {
       const _r = new URL( data.link );
-      const pathname = String( _r.pathname || '' ).replace( /^\/+/, '' ).split( '/' ).shift();
+      const pathlist = String( _r.pathname || '' ).replace( /^\/+|\/+$/g, '' ).split( '/' );
+      const pathname = pathlist.length ? pathlist.shift() : '';
       const hostname = String( _r.hostname || '' );
 
       // news/blog: use link hostname
@@ -229,7 +230,8 @@ new Vue({
       }
       // github: use path name as repo name
       if ( data.type === 'github' ) {
-        data.title = `${pathname} - ${data.title}`;
+        const repo = pathlist.length ? pathlist.shift() : '';
+        data.title = `${repo} - ${data.title}`;
         data.tag = 'Release';
       }
       // reddit: use pathname without extension
